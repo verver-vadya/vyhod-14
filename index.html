@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Название сайта — короткое описание</title>
+  <meta name="description" content="Описание сайта для поисковиков, 140–160 символов.">
+  <link rel="canonical" href="https://example.ru/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:title" content="Название сайта">
+  <meta property="og:description" content="Описание сайта для соцсетей и мессенджеров.">
+  <meta property="og:url" content="https://example.ru/">
+  <meta property="og:image" content="https://example.ru/assets/img/og.jpg">
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/manrope-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/form.js" defer></script>
+  <script src="assets/js/icons.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="logo" href="./">Логотип</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <morph-icon size="20" reduced-motion="user"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/></svg></morph-icon>
+        <span class="nav-toggle__label">Меню</span>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Основное меню">
+        <ul>
+          <li><a href="#about">О нас</a></li>
+          <li><a href="#services">Услуги</a></li>
+          <li><a href="#contacts">Контакты</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="container">
+        <h1>Главный заголовок</h1>
+        <p class="lead">Одно-два предложения о том, что здесь предлагают и кому.</p>
+        <a class="button" href="#contacts">Связаться</a>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="container">
+        <h2>О нас</h2>
+        <p>Текст-заглушка.</p>
+      </div>
+    </section>
+
+    <section id="services" class="section">
+      <div class="container">
+        <h2>Услуги</h2>
+        <ul class="cards">
+          <li class="card">
+            <h3>Услуга 1</h3>
+            <p>Описание.</p>
+            <button class="card__more" type="button" aria-haspopup="dialog" aria-controls="sheet-service-1">Подробнее об услуге</button>
+          </li>
+          <li class="card"><h3>Услуга 2</h3><p>Описание.</p></li>
+          <li class="card"><h3>Услуга 3</h3><p>Описание.</p></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="contacts" class="section">
+      <div class="container">
+        <h2>Контакты</h2>
+        <p>Телефон, почта, адрес. Или оставьте заявку, и мы перезвоним.</p>
+
+        <form class="form" action="https://formspree.io/f/YOUR_FORM_ID" method="post" data-form>
+          <div class="field">
+            <label for="f-name">Имя</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required minlength="2"
+              data-error-required="Напишите, как к вам обращаться">
+          </div>
+          <div class="field">
+            <label for="f-phone">Телефон</label>
+            <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required data-validate="phone"
+              aria-describedby="f-phone-hint" data-error-required="Укажите телефон, чтобы мы могли перезвонить">
+            <p class="field__hint" id="f-phone-hint">В любом формате, с +7 или 8</p>
+          </div>
+          <div class="field">
+            <label for="f-message">Комментарий <span class="field__optional">(необязательно)</span></label>
+            <textarea id="f-message" name="message" rows="4" maxlength="2000"></textarea>
+          </div>
+          <div class="field field--check">
+            <input id="f-consent" name="consent" type="checkbox" value="да" required
+              data-error-required="Без согласия на обработку данных мы не можем принять заявку">
+            <label for="f-consent">Даю согласие на обработку персональных данных в соответствии с <a href="privacy.html">политикой конфиденциальности</a></label>
+          </div>
+          <!-- Ловушка для спам-ботов: человек это поле не видит -->
+          <input class="form__trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="button" type="submit">Отправить заявку</button>
+          <p class="form__status" role="status" aria-live="polite" hidden></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Окно-шторка: пример. Удалите, если на сайте окон нет -->
+  <dialog class="sheet" id="sheet-service-1" aria-labelledby="sheet-service-1-title">
+    <div class="sheet__panel">
+      <div class="sheet__bar">
+        <button class="sheet__close" type="button" data-close>Закрыть <span aria-hidden="true">✕</span></button>
+      </div>
+      <div class="sheet__body">
+        <h2 class="sheet__title" id="sheet-service-1-title">Услуга 1</h2>
+        <p>Подробное описание: что входит, сколько длится, сколько стоит.</p>
+        <a class="button" href="#contacts" data-close>Оставить заявку</a>
+      </div>
+    </div>
+  </dialog>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; <span data-year>2026</span> Название · <a href="privacy.html">Политика конфиденциальности</a></p>
+    </div>
+  </footer>
+</body>
+</html>
