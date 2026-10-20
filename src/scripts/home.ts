@@ -11,7 +11,6 @@ gsap.registerPlugin(ScrollTrigger, SplitText);
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const seg = (p: number, a: number, b: number) => clamp((p - a) / (b - a));
-const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const store = {
   set(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* приватный режим */ } },
 };
@@ -243,23 +242,15 @@ function renderRoute(p: number) {
   stops.forEach((s, i) => s.classList.toggle("is-passed", p >= i / (stops.length - 1) - 0.001 && p > 0.02));
 }
 
-// паспорт: листают сами. Обложка открывается, страницы переворачиваются, визы и штампы проявляются
+// паспорт: листают сами. Обложка открывается, страницы переворачиваются; визы и штампы напечатаны на страницах
 const book = document.getElementById("book")!;
 const bookWrap = document.getElementById("book-wrap")!;
 const leaves = [...book.querySelectorAll<HTMLElement>(".leaf")].sort((a, b) => +a.dataset.leaf! - +b.dataset.leaf!);
-const marks = [...book.querySelectorAll<HTMLElement>("[data-s]")];
 const listItems = [...document.querySelectorAll("#passport-list li")];
 // Каждый переворот начинается ровно с разворота (см. SPREADS ниже), чтобы после нажатия не было паузы
+// Пункты списка стран отмечаются, когда лента доходит до их разворота
 const STEPS = [[0.2, 0.35], [0.48, 0.6], [0.51, 0.63], [0.78, 0.98]];
 const LEAF_TURNS = [[0, 0.22], [0.37, 0.53], [0.63, 0.8]];
-marks.forEach((m, i) => (m.dataset.mi = String(i)));
-const stepCount: Record<string, number> = {};
-const markIndex = new Map<HTMLElement, number>();
-marks.forEach((m) => {
-  const s = m.dataset.s!;
-  stepCount[s] = (stepCount[s] || 0) + 1;
-  markIndex.set(m, stepCount[s] - 1);
-});
 
 // Гибкий лист: каждая страница режется на вертикальные полосы, вложенные друг в друга.
 // Полоса поворачивается чуть сильнее предыдущей, и лист в полёте выгибается, как бумага.
@@ -267,7 +258,6 @@ marks.forEach((m) => {
 const STRIPS = 6;
 const stripsOf = new Map<HTMLElement, HTMLElement[]>();
 const shadesOf = new Map<HTMLElement, HTMLElement[]>();
-const copiesOf = new Map<HTMLElement, HTMLElement[]>();
 leaves.forEach((leaf) => {
   const front = leaf.querySelector<HTMLElement>(".leaf__front")!;
   const back = leaf.querySelector<HTMLElement>(".leaf__back")!;
@@ -290,11 +280,6 @@ leaves.forEach((leaf) => {
       slice.append(copy, shade);
       strip.append(slice);
       shades.push(shade);
-      copy.querySelectorAll<HTMLElement>("[data-s]").forEach((m) => {
-        const orig = marks[+m.dataset.mi!];
-        if (!copiesOf.has(orig)) copiesOf.set(orig, []);
-        copiesOf.get(orig)!.push(m);
-      });
     }
     parent.append(strip);
     strips.push(strip);
@@ -327,12 +312,17 @@ function renderPassport(p: number) {
     leaf.classList.toggle("is-flat", Math.abs(b) < 0.01);
     leaf.style.zIndex = String(a > -90 ? 10 - i : 10 + i);
     stripsOf.get(leaf)!.forEach((st, k) => st.style.setProperty("--b", k ? b.toFixed(2) : "0"));
-    // Тень на изгибе: чем круче полоса повёрнута к свету, тем она темнее
+    // Тень на изгибе: чем круче полоса повёрнута к свету, тем она темнее. Внутри полосы тень
+    // плавно идёт от её края к краю следующей, иначе на листе видны ступеньки
     const shades = shadesOf.get(leaf)!;
+    const shadeAt = (k: number) => ((0.16 * Math.abs(Math.sin(((a + b * k) * Math.PI) / 180)) * Math.abs(b)) / BEND).toFixed(3);
     for (let k = 0; k < STRIPS; k++) {
       const turn = a + b * k;
-      const sh = (0.16 * Math.abs(Math.sin((turn * Math.PI) / 180)) * Math.abs(b)) / BEND;
-      shades[k * 2].style.opacity = shades[k * 2 + 1].style.opacity = sh.toFixed(3);
+      const s0 = shadeAt(k), s1 = shadeAt(k + 1);
+      for (const sh of [shades[k * 2], shades[k * 2 + 1]]) {
+        sh.style.setProperty("--s0", s0);
+        sh.style.setProperty("--s1", s1);
+      }
       // Какую сторону полосы видно, решаем сами: backface-visibility на вложенных слоях браузеры
       // соблюдают по-разному, и в полёте сквозь лист проступало зеркальное лицо
       const back = turn < -90;
@@ -341,16 +331,6 @@ function renderPassport(p: number) {
     }
   });
   const stepK = STEPS.map(([a, b]) => seg(p, a, b));
-  marks.forEach((m) => {
-    const [a, b] = STEPS[+m.dataset.s!];
-    // внутри шага штампы ложатся по очереди
-    const n = stepCount[m.dataset.s!];
-    const len = (b - a) * (n > 1 ? 0.55 : 1);
-    const start = a + (n > 1 ? (markIndex.get(m)! / (n - 1)) * (b - a) * 0.45 : 0);
-    const k = ease(seg(p, start, start + len)).toFixed(3);
-    m.style.setProperty("--k", k);
-    copiesOf.get(m)?.forEach((c) => c.style.setProperty("--k", k));
-  });
   listItems.forEach((li, i) => li.classList.toggle("is-on", stepK[i] > 0.5));
 }
 

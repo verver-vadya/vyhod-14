@@ -517,7 +517,8 @@ html.has-menu { overflow: hidden; }
 .leaf.is-flat > .strip { width: var(--pw); }
 .leaf.is-flat > .strip > .slice > .slice__face { left: 0; }
 .leaf.is-flat .strip .strip { visibility: hidden; }
-.slice__shade { position: absolute; inset: 0; background: #16181c; opacity: 0; pointer-events: none; }
+.slice__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(22, 24, 28, var(--s0, 0)), rgba(22, 24, 28, var(--s1, 0))); pointer-events: none; }
+.slice--back .slice__shade { background: linear-gradient(270deg, rgba(22, 24, 28, var(--s0, 0)), rgba(22, 24, 28, var(--s1, 0))); }
 /* Водяной знак verver: ромб «Отражение» в кольце из надписи, как защитная печать бланка */
 .book { --watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3Cpath id='r' d='M100 100m-84 0a84 84 0 1 1 168 0a84 84 0 1 1-168 0'/%3E%3C/defs%3E%3Cg fill='none' stroke='%232f3a33' stroke-opacity='.11'%3E%3Ccircle cx='100' cy='100' r='94' stroke-width='.8'/%3E%3Ccircle cx='100' cy='100' r='75' stroke-width='.8'/%3E%3C/g%3E%3Ctext font-family='Helvetica,Arial,sans-serif' font-size='10.5' font-weight='700' fill='%232f3a33' fill-opacity='.1'%3E%3CtextPath href='%23r' textLength='527' lengthAdjust='spacing'%3EVERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 %3C/textPath%3E%3C/text%3E%3Cg transform='translate(100 100) scale(1.05)' fill='%232f3a33'%3E%3Cpolygon points='-50,0 0,-50 50,0 33,0 0,-33 -33,0' fill-opacity='.045'/%3E%3Cpolygon points='-50,0 0,50 50,0 33,0 0,33 -33,0' fill-opacity='.1'/%3E%3C/g%3E%3C/svg%3E") center 46% / 78% no-repeat; }
 .book__page, .leaf__face:not(.cover) {
@@ -563,10 +564,8 @@ html.has-menu { overflow: hidden; }
 .datapage__mrz, .visa__mrz { font: 500 0.82em/1.3 var(--mono); letter-spacing: 0.04em; color: rgba(22, 24, 28, 0.7); word-break: break-all; }
 .datapage__mrz { position: absolute; left: 8%; right: 8%; bottom: 8%; }
 .visa {
-  --k: 0;
   position: absolute; left: 7%; right: 7%; top: 7%;
   display: grid; gap: 0.8em; padding: 0.9em; border-radius: 4px;
-  opacity: var(--k); transform: translateY(calc((1 - var(--k)) * -0.8em)) scale(calc(1.04 - var(--k) * 0.04));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 .visa--it { background: repeating-linear-gradient(135deg, rgba(255,255,255,0.35) 0 2px, transparent 2px 6px), linear-gradient(160deg, #d7e6d2, #e9d9e4); }
@@ -575,13 +574,11 @@ html.has-menu { overflow: hidden; }
 .visa__top { display: flex; justify-content: space-between; font: 600 0.78em/1 var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
 .visa__body { display: grid; grid-template-columns: 34% 1fr; gap: 6%; }
 .stamp {
-  --k: 0;
   position: absolute; left: var(--x); top: var(--y);
   display: grid; justify-items: center; align-content: center; gap: 0.2em;
   color: var(--c); text-transform: uppercase; text-align: center;
-  mix-blend-mode: multiply;
-  opacity: calc(var(--k) * 0.88);
-  transform: rotate(var(--r)) scale(calc(1.7 - var(--k) * 0.7));
+  opacity: 0.88;
+  transform: rotate(var(--r));
 }
 .stamp b { font: 700 1.5em/1 var(--sans); letter-spacing: 0.04em; }
 .stamp span { font: 600 0.8em/1.1 var(--mono); letter-spacing: 0.06em; }
