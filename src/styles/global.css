@@ -505,6 +505,8 @@ html.has-menu { overflow: hidden; }
   transform: translateX(calc(var(--shift) * var(--pw) * -0.5));
   font-size: calc(var(--pw) * 0.042);
 }
+/* Корешок: тонкая линия сгиба между страницами, видна, пока паспорт открыт */
+.book::after { content: ""; position: absolute; top: 0; left: calc(var(--pw) - 0.5px); width: 1px; height: var(--ph); background: rgba(22, 24, 28, 0.16); opacity: calc(1 - var(--shift)); z-index: 20; pointer-events: none; }
 .book__page, .leaf { position: absolute; top: 0; left: var(--pw); width: var(--pw); height: var(--ph); }
 .leaf { transform-origin: 0 50%; transform-style: preserve-3d; transform: rotateY(calc(var(--a, 0) * 1deg)); }
 .leaf__face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
