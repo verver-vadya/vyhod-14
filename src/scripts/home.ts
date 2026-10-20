@@ -1,4 +1,4 @@
-// Главная: заставка, видео, табло вылетов, виджеты, самолёт маршрута, паспорт и небо по прокрутке
+// Главная: заставка, видео, табло вылетов, виджеты, паспорт, самолёт маршрута и небо по прокрутке
 import { fontsReady, makeCell, reduce, setWord, setWordInstant } from "./led";
 import { countries } from "../data/countries";
 import { rowOf } from "../lib/board";
@@ -243,9 +243,9 @@ function renderRoute(p: number) {
   stops.forEach((s, i) => s.classList.toggle("is-passed", p >= i / (stops.length - 1) - 0.001 && p > 0.02));
 }
 
-// паспорт: обложка открывается, страницы листаются, визы и штампы проявляются
-const passport = document.getElementById("passport")!;
+// паспорт: листают сами. Обложка открывается, страницы переворачиваются, визы и штампы проявляются
 const book = document.getElementById("book")!;
+const bookWrap = document.getElementById("book-wrap")!;
 const leaves = [...book.querySelectorAll<HTMLElement>(".leaf")].sort((a, b) => +a.dataset.leaf! - +b.dataset.leaf!);
 const marks = [...book.querySelectorAll<HTMLElement>("[data-s]")];
 const listItems = [...document.querySelectorAll("#passport-list li")];
@@ -279,6 +279,77 @@ function renderPassport(p: number) {
   listItems.forEach((li, i) => li.classList.toggle("is-on", stepK[i] > 0.5));
 }
 
+// Развороты: обложка, данные и Италия, Китай и Япония, отметки. p — положение «ленты» renderPassport
+const SPREADS = [0, 0.37, 0.63, 1];
+const SPREAD_NAMES = ["Обложка", "Италия", "Китай и Япония", "Отметки о въезде"];
+const navBtns = [...document.querySelectorAll<HTMLButtonElement>(".book-nav__btn")];
+const bookLabel = document.getElementById("book-label")!;
+const book$ = { p: 0 };
+let spread = 0;
+
+function showSpread() {
+  navBtns[0].disabled = spread === 0;
+  navBtns[1].disabled = spread === SPREADS.length - 1;
+  bookLabel.textContent = `${SPREAD_NAMES[spread]} · ${spread + 1} из ${SPREADS.length}`;
+}
+function goTo(i: number) {
+  const from = book$.p;
+  spread = clamp(i, 0, SPREADS.length - 1);
+  showSpread();
+  const to = SPREADS[spread];
+  // Один разворот — чуть меньше секунды: страница успевает перевернуться, штампы лечь следом
+  gsap.to(book$, {
+    p: to, duration: reduce.matches ? 0 : 0.35 + Math.abs(to - from) * 1.9, ease: "soft", overwrite: true,
+    onUpdate: () => renderPassport(book$.p),
+  });
+}
+navBtns.forEach((b) => b.addEventListener("click", () => goTo(spread + +b.dataset.dir!)));
+document.querySelectorAll<HTMLButtonElement>("#passport-list [data-go]").forEach((b) => b.addEventListener("click", () => goTo(+b.dataset.go!)));
+
+// Страницу можно тянуть пальцем или мышью: паспорт идёт за рукой, отпустили — доворачивается.
+// Короткое нажатие листает по стороне: правая половина вперёд, левая назад.
+let drag: { x: number; w: number; base: number; moved: boolean; t: number; lastX: number; lastT: number; v: number } | null = null;
+bookWrap.addEventListener("pointerdown", (e) => {
+  if (e.button !== 0) return;
+  gsap.killTweensOf(book$);
+  drag = { x: e.clientX, w: book.offsetWidth / 2, base: spread, moved: false, t: e.timeStamp, lastX: e.clientX, lastT: e.timeStamp, v: 0 };
+});
+bookWrap.addEventListener("pointermove", (e) => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x;
+  if (!drag.moved && Math.abs(dx) < 6) return;
+  if (!drag.moved) { drag.moved = true; bookWrap.setPointerCapture(e.pointerId); }
+  const dt = e.timeStamp - drag.lastT;
+  if (dt > 0) drag.v = (e.clientX - drag.lastX) / dt;
+  drag.lastX = e.clientX; drag.lastT = e.timeStamp;
+  // Тянем влево — вперёд, вправо — назад; на краях паспорт сопротивляется
+  const k = -dx / drag.w;
+  const next = clamp(drag.base + Math.sign(k), 0, SPREADS.length - 1);
+  const span = SPREADS[next] - SPREADS[drag.base];
+  book$.p = SPREADS[drag.base] + (span ? clamp(Math.abs(k)) * Math.abs(span) * Math.sign(span) : 0);
+  renderPassport(book$.p);
+});
+const endDrag = (e: PointerEvent) => {
+  if (!drag) return;
+  const d = drag;
+  drag = null;
+  if (!d.moved) {
+    const r = book.getBoundingClientRect();
+    // Закрытый паспорт открывается нажатием в любое место обложки
+    goTo(spread === 0 || e.clientX > r.left + r.width / 2 ? spread + 1 : spread - 1);
+    return;
+  }
+  const k = (d.x - e.clientX) / d.w;
+  // Решает либо пройденная треть, либо быстрый взмах
+  const fast = Math.abs(d.v) > 0.5;
+  const dir = fast ? Math.sign(-d.v) : Math.abs(k) > 0.33 ? Math.sign(k) : 0;
+  goTo(d.base + dir);
+};
+bookWrap.addEventListener("pointerup", endDrag);
+bookWrap.addEventListener("pointercancel", () => { if (drag) { drag = null; goTo(spread); } });
+showSpread();
+renderPassport(0);
+
 // небо: рассвет → день → золотой час → закат, слои плавно сменяют друг друга
 const ORDER = ["dawn", "day", "gold", "sunset"];
 const skyLayers = ORDER.map((n) => document.querySelector<HTMLElement>(`.sky--${n}`)!);
@@ -303,8 +374,7 @@ measureSky();
 const mm = gsap.matchMedia();
 mm.add({ motion: "(prefers-reduced-motion: no-preference)", reduce: "(prefers-reduced-motion: reduce)" }, (ctx) => {
   if (ctx.conditions!.reduce) {
-    // Без движения: паспорт сразу раскрыт со всеми штампами, маршрут пройден, небо меняется без догона
-    renderPassport(0.98);
+    // Без движения: маршрут пройден, небо меняется без догона, паспорт листается без анимации
     renderRoute(1);
     ScrollTrigger.create({ start: 0, end: "max", onUpdate: () => renderSky(scrollY + innerHeight / 2), onRefresh: () => { measureSky(); renderSky(scrollY + innerHeight / 2); } });
     return;
@@ -313,11 +383,6 @@ mm.add({ motion: "(prefers-reduced-motion: no-preference)", reduce: "(prefers-re
   gsap.to(route$, {
     p: 1, ease: "none", onUpdate: () => renderRoute(route$.p),
     scrollTrigger: { trigger: route, start: "top 90%", end: "top 35%", scrub: scrub(), onRefresh: () => track.style.setProperty("--w", String(track.clientWidth)) },
-  });
-  const passport$ = { p: 0 };
-  gsap.to(passport$, {
-    p: 1, ease: "none", onUpdate: () => renderPassport(passport$.p),
-    scrollTrigger: { trigger: passport, start: "top top", end: "bottom bottom", scrub: scrub() },
   });
   // Небо считаем по сглаженной середине экрана
   const sky$ = { y: 0 };
