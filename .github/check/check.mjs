@@ -4,6 +4,7 @@
 //
 //   npm run check           ошибки валят проверку, заглушки только предупреждают (черновик)
 //   npm run check:release   заглушки тоже валят проверку (перед публикацией на боевой адрес)
+//   npm run check -- --site <папка>   проверить собранный сайт из этой папки (например, ../../dist)
 //   npm run check -- --base <папка>   ещё сравнить размеры блоков с прошлой версией сайта из этой папки
 //
 // Скриншоты и отчёт складываются в .check/ в корне сайта.
@@ -16,6 +17,9 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
 const OUT = path.join(ROOT, ".check");
+// Собранный сайт (Astro, папка dist): npm run check -- --site ../../dist. Без флага проверяется корень репозитория
+const SITE_ARG = process.argv.indexOf("--site");
+const SITE = SITE_ARG > 0 && process.argv[SITE_ARG + 1] ? path.resolve(process.argv[SITE_ARG + 1]) : ROOT;
 const RELEASE = process.argv.includes("--release");
 const BASE_ARG = process.argv.indexOf("--base");
 const BASE = BASE_ARG > 0 && process.argv[BASE_ARG + 1] ? path.resolve(process.argv[BASE_ARG + 1]) : null;
@@ -95,7 +99,7 @@ const TYPES = {
   ".txt": "text/plain; charset=utf-8", ".ico": "image/x-icon", ".pdf": "application/pdf",
 };
 
-async function resolveFile(urlPath, root = ROOT) {
+async function resolveFile(urlPath, root = SITE) {
   const rel = decodeURIComponent(urlPath.split("?")[0]).replace(/^\/+/, "");
   if (rel.split("/").some((part) => part.startsWith(".") || part === "node_modules")) return null;
   let file = path.join(root, rel);
@@ -108,7 +112,7 @@ async function resolveFile(urlPath, root = ROOT) {
   }
 }
 
-function startServer(root = ROOT) {
+function startServer(root = SITE) {
   const server = http.createServer(async (req, res) => {
     if (req.method === "POST") { res.writeHead(405).end(); return; }
     const file = await resolveFile(new URL(req.url, "http://x").pathname, root);
@@ -319,6 +323,8 @@ async function revealAll(page) {
 function scanOverlap(scope) {
   // Скрытое визуально (в том числе .visually-hidden для экранного диктора) не считается
   const shown = (el) => {
+    // Закрытый <details> и content-visibility: hidden сохраняют размеры, но на экране их нет
+    if (el.checkVisibility && !el.checkVisibility()) return false;
     for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
       const s = getComputedStyle(n);
       const r = n.getBoundingClientRect();
@@ -410,7 +416,7 @@ async function checkHoverOverlap(page, pathname, label) {
     }
     let n = 0;
     for (const sel of out) {
-      for (const el of document.querySelectorAll(sel)) if (n < 12 && el.getBoundingClientRect().width) el.dataset.checkHover = String(n++);
+      for (const el of document.querySelectorAll(sel)) if (n < 12 && !el.dataset.checkHover && el.getBoundingClientRect().width) el.dataset.checkHover = String(n++); // элемент мог подойти под два селектора
     }
     return n;
   });
@@ -644,12 +650,25 @@ async function fillValid(form) {
     const type = await input.getAttribute("type");
     if (["hidden", "submit"].includes(type) || (await input.getAttribute("tabindex")) === "-1") continue;
     if (type === "checkbox") { if (await input.getAttribute("required") !== null) await input.check(); continue; }
+    if (type === "date") {
+      // Завтрашний день: подходит и под min = сегодня
+      const d = new Date(Date.now() + 864e5);
+      await input.fill(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+      continue;
+    }
+    if (type === "time") { await input.fill("12:00"); continue; }
+    if (type === "number") { await input.fill((await input.getAttribute("min")) || "1"); continue; }
     const name = (await input.getAttribute("name")) || "";
     const value = type === "tel" || /phone/i.test(name) ? "8 (912) 345-67-80"
       : type === "email" ? "check@mail.ru"
       : (await input.evaluate((el) => el.tagName)) === "TEXTAREA" ? "Проверочная заявка"
       : "Анна";
     await input.fill(value);
+  }
+  // Обязательные списки: первый вариант с непустым значением
+  for (const select of await form.locator("select[required]").all()) {
+    const value = await select.evaluate((el) => [...el.options].find((o) => !o.disabled && o.value)?.value);
+    if (value) await select.selectOption(value);
   }
 }
 
@@ -663,7 +682,8 @@ async function checkForm(browser, url, index) {
   // Подменяем адрес приёма заявок, чтобы управлять ответом сервера
   await form.evaluate((el) => { el.action = `${location.origin}/__check_submit`; });
   const submit = form.locator('[type="submit"]');
-  const status = form.locator('[role="status"], [aria-live]').first();
+  // Строка статуса формы: role="status", а если её нет — первый aria-live (подсказки вроде цены тоже бывают aria-live)
+  const status = (await form.locator('[role="status"]').count()) ? form.locator('[role="status"]').first() : form.locator("[aria-live]").first();
   let requests = 0;
   let mode = { status: 200, delay: 0, abort: false };
   await page.route("**/__check_submit", async (route) => {
@@ -773,7 +793,7 @@ const titles = new Map();
 const boxes = new Map();
 
 for (const file of ["robots.txt", "sitemap.xml"]) {
-  const text = await fs.readFile(path.join(ROOT, file), "utf8").catch(() => null);
+  const text = await fs.readFile(path.join(SITE, file), "utf8").catch(() => null);
   if (text === null) error(file, "файла нет");
   else await checkSourceText(file, text);
 }

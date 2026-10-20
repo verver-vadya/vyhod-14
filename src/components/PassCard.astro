@@ -1,0 +1,25 @@
+---
+import type { Country } from "../data/countries";
+import { asset, rub, url } from "../lib/url";
+interface Props { c: Country; eager?: boolean }
+const { c, eager = false } = Astro.props;
+---
+<a class="pass" href={url(`/vizy/${c.slug}/`)} data-group={c.group}>
+  <div class="pass__main">
+    <div class="pass__photo">
+      <img src={asset(`img/${c.slug}-480.webp`)} srcset={`${asset(`img/${c.slug}-480.webp`)} 480w, ${asset(`img/${c.slug}-960.webp`)} 960w`} sizes="(max-width: 760px) 80vw, 420px" alt={c.photo.alt} loading={eager ? "eager" : "lazy"} width="480" height="322">
+    </div>
+    <span class="label">Направление</span>
+    <span class="pass__country">{c.name}</span>
+    <dl class="pass__meta">
+      <div><dt>Виза</dt><dd>{c.visa.replace("Электронная ", "")}</dd></div>
+      <div><dt>Срок</dt><dd>от {c.days} дней</dd></div>
+      <div><dt>Услуги</dt><dd>от {rub(c.price)}</dd></div>
+    </dl>
+  </div>
+  <div class="pass__stub">
+    <span class="pass__code">{c.code}</span>
+    <span class="barcode" aria-hidden="true"></span>
+    <span class="pass__go">Оформить <span aria-hidden="true">→</span></span>
+  </div>
+</a>

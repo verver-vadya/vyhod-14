@@ -1,0 +1,59 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import { site } from "../data/site";
+import { asset, url } from "../lib/url";
+
+const principles = [
+  ["01", "Говорим, как есть", "Если шанс получить визу низкий, скажем об этом до договора, а не после отказа. Иногда лучше подать в другую страну или подождать полгода."],
+  ["02", "Одна страна — один человек", "Шенгеном, Азией и электронными визами занимаются разные менеджеры. Каждый знает требования своих консульств лучше, чем общий список в интернете."],
+  ["03", "Проверяем дважды", "Каждый документ смотрят двое: тот, кто его готовил, и второй менеджер. Опечатка в фамилии стоит дороже, чем пять минут на проверку."],
+  ["04", "Паспорт на виду", "Номер заявки, статус на сайте и сообщение в Telegram на каждом этапе: вы всегда знаете, где сейчас ваш паспорт."],
+];
+---
+<Base title="О нас — Выход 14 (концепт)" description="«Выход 14» — визовый центр у метро «Площадь Восстания» в Петербурге. Как мы работаем и почему так.">
+  <PageHead title="Визовый центр у Московского вокзала" crumbs={[["О нас"]]} lead="Небольшой офис на Лиговском, четыре менеджера и одно правило: документы должны быть готовы так, чтобы консульству не о чем было спросить." />
+
+  <section class="section section--tight" aria-labelledby="story-title">
+    <div class="wrap side">
+      <div class="photo reveal" style="aspect-ratio: 3 / 2">
+        <img src={asset("img/ofis-960.webp")} srcset={`${asset("img/ofis-960.webp")} 960w, ${asset("img/ofis-1264.webp")} 1264w`} sizes="(max-width: 1100px) 92vw, 560px" alt="Кабинет с высоким окном, стол с папками документов и паспортом" width="960" height="644" loading="lazy">
+      </div>
+      <div class="prose reveal">
+        <p class="eyebrow eyebrow--ink">Почему «Выход 14»</p>
+        <h2 id="story-title">Название — про последний шаг перед вылетом</h2>
+        <p>В аэропорту выход на посадку — последнее место, где ещё что-то зависит от документов. Мы хотим, чтобы к этому моменту вам не о чем было волноваться: виза вклеена, даты совпадают, страховка покрывает весь срок.</p>
+        <p>Офис на Лиговском, 50 — в пяти минутах от «Площади Восстания» и Московского вокзала. Сюда удобно заехать по дороге с работы, а визовые центры большинства стран — в пятнадцати минутах на метро.</p>
+        <p>Работаем с туристами, семьями с детьми, студентами и компаниями, которые отправляют сотрудников в командировки.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="principles-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">Как работаем</p>
+        <h2 id="principles-title">Четыре правила, которые не нарушаем</h2>
+      </div>
+      <div class="principles">
+        {principles.map(([code, title, text]) => (
+          <div class="principle reveal"><span class="principle__code">{code}</span><h3>{title}</h3><p>{text}</p></div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="visit-title">
+    <div class="wrap side">
+      <div class="section__head section__head--side reveal">
+        <p class="eyebrow eyebrow--ink">Приходите</p>
+        <h2 id="visit-title">Консультация в офисе бесплатная</h2>
+      </div>
+      <div class="prose reveal">
+        <p>{site.addressFull}, м. «{site.metro}». {site.hours.map(([d, h]) => `${d} ${h}`).join(", ")}.</p>
+        <p>Возьмите загранпаспорт и, если есть, старые паспорта с визами: по ним сразу будет видно, какую визу просить.</p>
+        <p><a class="btn btn--ink" href={url("/kontakty/")}><span class="btn__in">Как нас найти</span></a></p>
+      </div>
+    </div>
+  </section>
+</Base>

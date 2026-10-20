@@ -1,0 +1,35 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import Route from "../components/Route.astro";
+import TicketForm from "../components/TicketForm.astro";
+import { steps } from "../data/countries";
+---
+<Base title="Оставить заявку на визу — Выход 14 (концепт)" description="Оставьте номер, и визовый центр «Выход 14» перезвонит в течение часа в рабочее время и пришлёт список документов под вашу страну." form>
+  <PageHead title="Оставить заявку" crumbs={[["Заявка"]]} lead="Перезвоним в рабочее время в течение часа. Ничего не нужно готовить заранее: о документах расскажем сами." />
+
+  <section class="section section--tight" aria-label="Форма заявки">
+    <div class="wrap">
+      <TicketForm id="apply" title="Куда летим?" comment />
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="next-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">Что будет дальше</p>
+        <h2 id="next-title">После заявки</h2>
+      </div>
+      <Route steps={steps} />
+    </div>
+  </section>
+
+  <script>
+    // Страна приходит из ссылки: /zayavka/?strana=italiya
+    import { countries } from "../data/countries";
+    const slug = new URLSearchParams(location.search).get("strana");
+    const c = countries.find((x) => x.slug === slug);
+    const select = document.querySelector<HTMLSelectElement>("[data-country-select]");
+    if (c && select) select.value = c.name;
+  </script>
+</Base>

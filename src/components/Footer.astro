@@ -1,0 +1,31 @@
+---
+import { nav, site } from "../data/site";
+import { url } from "../lib/url";
+---
+<footer class="footer">
+  <div class="wrap footer__in">
+    <div class="footer__word" aria-hidden="true">Выход<span>14</span></div>
+    <div class="footer__cols">
+      <div>
+        <span class="label">Связаться</span>
+        <a href={site.phoneHref}>{site.phone}</a>
+        <a href={site.telegram}>Telegram {site.telegramName}</a>
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+        <span>{site.address}, м. {site.metro}</span>
+      </div>
+      <div>
+        <span class="label">Разделы</span>
+        {nav.map((item) => <a href={url(item.href)}>{item.label}</a>)}
+        <a href={url("/zayavka/")}>Оставить заявку</a>
+      </div>
+      <div>
+        <span class="label">Документы</span>
+        <a href={url("/privacy/")}>Политика конфиденциальности</a>
+      </div>
+    </div>
+    <p class="footer__concept">
+      Концепт. «Выход 14» — вымышленная компания, цены и сроки для примера. Фото сгенерированы нейросетью, видео: Mixkit (бесплатная лицензия).
+      Погода: Open-Meteo, курс: ЦБ РФ. Сайт сделал <a href={site.author}>verver</a>.
+    </p>
+  </div>
+</footer>

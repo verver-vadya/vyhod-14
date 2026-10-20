@@ -6,3 +6,5 @@ node_modules/
 *.log
 .check/
 .base-site/
+dist/
+.astro/

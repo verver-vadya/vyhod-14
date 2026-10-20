@@ -1,0 +1,38 @@
+---
+import { nav, site } from "../data/site";
+import { url } from "../lib/url";
+// Текущий раздел: адрес страницы начинается с адреса пункта меню
+const here = Astro.url.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ""), "") || "/";
+const isCurrent = (href: string) => here.startsWith(href);
+---
+<header class="header">
+  <div class="header__in">
+    <a class="logo" href={url("/")} aria-label="Выход 14, на главную"><span>Выход</span><span class="logo__gate">14</span></a>
+    <nav class="nav" aria-label="Основное меню">
+      {nav.map((item) => (
+        <a href={url(item.href)} aria-current={isCurrent(item.href) ? "page" : undefined}>{item.label}</a>
+      ))}
+    </nav>
+    <a class="header__tel" href={site.phoneHref}>{site.phone}</a>
+    <a class="btn btn--signal btn--sm header__cta" href={url("/zayavka/")}><span class="btn__in">Оставить заявку</span></a>
+    <button class="burger" type="button" aria-haspopup="dialog" aria-controls="menu" aria-expanded="false" aria-label="Меню"><i></i><i></i></button>
+  </div>
+</header>
+
+<dialog class="menu" id="menu" aria-label="Меню">
+  <div class="menu__panel">
+    <div class="menu__bar">
+      <a class="logo" href={url("/")} aria-label="Выход 14, на главную"><span>Выход</span><span class="logo__gate">14</span></a>
+      <button class="menu__close" type="button" aria-label="Закрыть меню"><i></i><i></i></button>
+    </div>
+    <nav class="menu__nav" aria-label="Разделы" tabindex="-1" autofocus>
+      {nav.map((item, i) => (
+        <a href={url(item.href)} style={`--i: ${i}`} aria-current={isCurrent(item.href) ? "page" : undefined}>{item.label}</a>
+      ))}
+    </nav>
+    <div class="menu__foot" style={`--i: ${nav.length}`}>
+      <a class="menu__tel" href={site.phoneHref}>{site.phone}</a>
+      <a class="btn btn--signal btn--wide" href={url("/zayavka/")}><span class="btn__in">Оставить заявку</span></a>
+    </div>
+  </div>
+</dialog>

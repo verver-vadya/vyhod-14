@@ -1,0 +1,58 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHead from "../../components/PageHead.astro";
+import PassCard from "../../components/PassCard.astro";
+import { countries, groups } from "../../data/countries";
+import { site } from "../../data/site";
+import { url } from "../../lib/url";
+---
+<Base title="Визы: шенген, Китай, Япония и электронные — Выход 14 (концепт)" description="Каталог виз визового центра «Выход 14» в Петербурге: шенгенские визы, Китай, Япония, электронные визы в Индию, Вьетнам и Индонезию. Сроки и цены услуг.">
+  <PageHead title="Куда оформляем визы" crumbs={[["Визы"]]} lead="Десять направлений, с которыми работаем каждую неделю. Если вашей страны нет в списке, напишите: скорее всего, тоже поможем." />
+
+  <section class="section section--tight paper" aria-label="Страны">
+    <div class="wrap">
+      <div class="filters" role="group" aria-label="Показать визы" data-filters>
+        <button class="chip" type="button" aria-pressed="true" data-filter="all">Все <small>{countries.length}</small></button>
+        {groups.map((g) => (
+          <button class="chip" type="button" aria-pressed="false" data-filter={g.id}>{g.label} <small>{countries.filter((c) => c.group === g.id).length}</small></button>
+        ))}
+      </div>
+      <p class="visually-hidden" role="status" aria-live="polite" data-filter-status></p>
+      <div class="passes__grid">
+        {countries.map((c, i) => <PassCard c={c} eager={i < 3} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="other-title">
+    <div class="wrap side">
+      <div class="section__head section__head--side reveal">
+        <p class="eyebrow eyebrow--ink">Нет в списке</p>
+        <h2 id="other-title">Другая страна или сложный случай</h2>
+      </div>
+      <div class="prose reveal">
+        <p>Были отказы, нужна учебная или рабочая виза, едете с ребёнком без второго родителя — расскажите, куда и зачем летите. Перезвоним, разберём ситуацию и честно скажем, есть ли шанс.</p>
+        <p>
+          <a class="btn btn--ink" href={url("/zayavka/")}><span class="btn__in">Оставить заявку</span></a>
+        </p>
+        <p>Или напишите в Telegram: <a href={site.telegram}>{site.telegramName}</a></p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Фильтр по группе: частое действие, поэтому карточки меняются сразу, без анимации
+    const box = document.querySelector("[data-filters]")!;
+    const status = document.querySelector("[data-filter-status]")!;
+    const cards = [...document.querySelectorAll<HTMLElement>(".pass[data-group]")];
+    box.addEventListener("click", (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>("[data-filter]");
+      if (!btn) return;
+      box.querySelectorAll("[data-filter]").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      const f = btn.dataset.filter;
+      let n = 0;
+      cards.forEach((c) => { c.hidden = f !== "all" && c.dataset.group !== f; if (!c.hidden) n++; });
+      status.textContent = `Показано стран: ${n}`;
+    });
+  </script>
+</Base>

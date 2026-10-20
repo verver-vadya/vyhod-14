@@ -1,0 +1,56 @@
+---
+// Заявка в виде посадочного талона. Отправка через form.js (проверка полей, честные состояния)
+import { countries } from "../data/countries";
+import { site } from "../data/site";
+import { url } from "../lib/url";
+interface Props { id?: string; title?: string; country?: string; comment?: boolean; headingLevel?: 1 | 2 }
+const { id = "apply", title = "Оставьте номер, а список документов пришлём мы", country, comment = false, headingLevel = 2 } = Astro.props;
+const H = headingLevel === 1 ? "h1" : "h2";
+---
+<form class="ticket" action={site.formAction} method="post" data-form aria-labelledby={`${id}-title`}>
+  <div class="ticket__main">
+    <p class="eyebrow eyebrow--ink">Посадочный талон</p>
+    <H id={`${id}-title`}>{title}</H>
+    <div class="ticket__fields">
+      <div class="field">
+        <label for={`${id}-name`}>Как к вам обращаться</label>
+        <input id={`${id}-name`} name="name" autocomplete="name" required minlength="2" data-error-required="Напишите, как к вам обращаться">
+      </div>
+      <div class="field">
+        <label for={`${id}-tel`}>Телефон</label>
+        <input id={`${id}-tel`} name="phone" type="tel" inputmode="tel" autocomplete="tel" required data-validate="phone" placeholder="+7" data-error-required="Нужен телефон, чтобы перезвонить">
+      </div>
+      <div class="field">
+        <label for={`${id}-country`}>Куда летите</label>
+        <select id={`${id}-country`} name="country" data-country-select>
+          <option value="">Пока не решил</option>
+          {countries.map((c) => <option value={c.name} selected={c.slug === country}>{c.name}</option>)}
+          <option value="Другая страна">Другая страна</option>
+        </select>
+      </div>
+      {comment && (
+        <div class="field field--wide">
+          <label for={`${id}-comment`}>Даты поездки и вопросы <span class="field__hint">(необязательно)</span></label>
+          <textarea id={`${id}-comment`} name="comment" rows="3" maxlength="2000"></textarea>
+        </div>
+      )}
+    </div>
+    <div class="field field--check">
+      <input id={`${id}-agree`} name="consent" type="checkbox" value="да" required data-error-required="Без согласия мы не можем принять заявку">
+      <label for={`${id}-agree`}>Согласен на обработку персональных данных по <a href={url("/privacy/")}>политике конфиденциальности</a></label>
+    </div>
+    <input class="form__trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+  </div>
+  <div class="ticket__stub">
+    <dl class="ticket__info">
+      <dt class="label">Выход</dt><dd class="ticket__gate">14</dd>
+      <dt class="label">Адрес</dt><dd>{site.address}</dd>
+      <dt class="label">Метро</dt><dd>{site.metro}</dd>
+      <dt class="label">Часы</dt><dd>{site.hours.slice(0, 2).map(([d, h]) => <>{d} {h}<br></>)}</dd>
+    </dl>
+    <div class="ticket__send">
+      <button class="btn btn--ink btn--wide" type="submit"><span class="btn__in">Отправить заявку</span></button>
+      <p class="form__status" role="status" aria-live="polite" hidden></p>
+    </div>
+  </div>
+</form>

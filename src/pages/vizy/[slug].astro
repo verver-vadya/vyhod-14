@@ -1,0 +1,147 @@
+---
+import Base from "../../layouts/Base.astro";
+import PageHead from "../../components/PageHead.astro";
+import Flap from "../../components/Flap.astro";
+import PassCard from "../../components/PassCard.astro";
+import Route from "../../components/Route.astro";
+import TicketForm from "../../components/TicketForm.astro";
+import { countries, evisaSteps, faq, groups, packages, steps } from "../../data/countries";
+import type { Country } from "../../data/countries";
+import { asset, rub, url } from "../../lib/url";
+
+export function getStaticPaths() {
+  return countries.map((c) => ({ params: { slug: c.slug }, props: { c } }));
+}
+const { c } = Astro.props as { c: Country };
+const group = groups.find((g) => g.id === c.group)!;
+const plans = packages.filter((p) => p.id !== "urgent" || c.urgent);
+const others = countries.filter((o) => o.group === c.group && o.slug !== c.slug).concat(countries.filter((o) => o.group !== c.group)).slice(0, 3);
+const evisa = c.group === "evisa";
+---
+<Base title={`Виза ${c.to}: документы, сроки, цены — Выход 14 (концепт)`} description={`${c.visa} ${c.to} через визовый центр «Выход 14» в Петербурге: срок от ${c.days} рабочих дней, услуги от ${rub(c.price)}. Список документов и как проходит оформление.`} form>
+  <PageHead title="" class="country-head">
+    <div class="country-head__in" slot="top">
+      <div class="country-head__text">
+        <nav aria-label="Вы здесь">
+          <ol class="crumbs">
+            <li><a href={url("/")}>Главная</a></li>
+            <li><a href={url("/vizy/")}>Визы</a></li>
+            <li><span aria-current="page">{c.name}</span></li>
+          </ol>
+        </nav>
+        <p class="eyebrow">{group.label}</p>
+        <h1>Виза {c.to}</h1>
+        <p class="muted">{c.lead}</p>
+        <dl class="facts">
+          <div><dt>Виза</dt><dd>{c.visa}</dd></div>
+          <div><dt>Рассмотрение</dt><dd>от {c.days} рабочих дней</dd></div>
+          <div><dt>Консульский сбор</dt><dd>{c.fee}</dd></div>
+          <div><dt>Наши услуги</dt><dd>от {rub(c.price)}</dd></div>
+        </dl>
+        <div class="hero__actions">
+          <a class="btn btn--signal" href="#apply"><span class="btn__in">Оставить заявку</span></a>
+          <a class="btn btn--glass" href="#docs"><span class="btn__in">Список документов</span></a>
+        </div>
+      </div>
+      <div class="country-head__photo">
+        <img src={asset(`img/${c.slug}-960.webp`)} srcset={`${asset(`img/${c.slug}-960.webp`)} 960w, ${asset(`img/${c.slug}-1264.webp`)} 1264w`} sizes="(max-width: 1100px) 92vw, 600px" alt={c.photo.alt} width="960" height="644" fetchpriority="high">
+        <div class="country-head__code" aria-hidden="true" data-overlap-ok><Flap text={c.code} len={3} /></div>
+      </div>
+    </div>
+  </PageHead>
+
+  <section class="section" id="docs" aria-labelledby="docs-title">
+    <div class="wrap side">
+      <div class="section__head section__head--side reveal">
+        <p class="eyebrow eyebrow--ink">01 / Документы</p>
+        <h2 id="docs-title">{evisa ? "Что прислать для e-визы" : "Что понадобится для подачи"}</h2>
+        <p class="lead">Точный список пришлём после звонка: он зависит от работы, возраста и истории поездок.</p>
+      </div>
+      <div class="notes">
+        <ol class="docs reveal">
+          {c.docs.map((d) => <li>{d}</li>)}
+        </ol>
+        {c.notes.map((n) => (
+          <div class="note reveal"><span class="label">Важно</span><p>{n}</p></div>
+        ))}
+        <p class="note reveal"><span class="label">Куда подаём</span>{c.where}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="route-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">02 / Как проходит</p>
+        <h2 id="route-title">{evisa ? "Четыре шага, и виза у вас на почте" : "Четыре остановки до паспорта с визой"}</h2>
+      </div>
+      <Route steps={evisa ? evisaSteps : steps} />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="plans-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">03 / Сколько стоит</p>
+        <h2 id="plans-title">Наши услуги для визы {c.to}</h2>
+        <p class="lead">Консульский сбор {c.fee === "не взимается" ? "не взимается" : `${c.fee} оплачивается отдельно`}. Цена фиксируется в договоре и не меняется по ходу.</p>
+      </div>
+      <div class="plans">
+        {plans.map((p) => (
+          <div class:list={["plan", "reveal", { "plan--best": "best" in p }]}>
+            {"best" in p && <span class="plan__tag">Чаще берут</span>}
+            <h3>{p.name}</h3>
+            <p class="plan__price">{rub(c.price + p.extra)}<small>за одного человека</small></p>
+            <div class="notes">
+              <p class="plan__text">{p.text}</p>
+              <ul class="ticks">{p.items.map((it) => <li>{it}</li>)}</ul>
+            </div>
+            <a class:list={["btn", "btn--wide", "best" in p ? "btn--signal" : "btn--line"]} href="#apply"><span class="btn__in">Выбрать</span></a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">04 / Вопросы</p>
+        <h2 id="faq-title">О чём спрашивают чаще всего</h2>
+      </div>
+      <div class="faq">
+        {faq[c.group].map(([q, a]) => <details><summary>{q}</summary><p>{a}</p></details>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="apply" aria-label="Заявка">
+    <div class="wrap">
+      <TicketForm id="country-apply" title={`Оформим визу ${c.to}. Оставьте номер, перезвоним`} country={c.slug} comment />
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="more-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">Ещё направления</p>
+        <h2 id="more-title">Куда ещё летят наши клиенты</h2>
+        <a class="link-arrow" href={url("/vizy/")}>Все страны <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="passes__grid">
+        {others.map((o) => <PassCard c={o} />)}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Код страны на фото перещёлкивается при загрузке, как строка табло
+    import { fontsReady, setWord, setWordInstant } from "../../scripts/flap";
+    const code = document.querySelector(".country-head__code .word");
+    if (code) {
+      const text = [...code.children].map((c) => (c as HTMLElement).dataset.c).join("");
+      setWordInstant(code, "");
+      fontsReady.then(() => setWord(code, text, 250, 80, 5));
+    }
+  </script>
+</Base>

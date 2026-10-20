@@ -36,11 +36,17 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: .github/check/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            .github/check/package-lock.json
+      # Сайт на Astro: сначала собираем его в dist, проверяем уже готовые страницы
+      - name: Сборка сайта
+        working-directory: .
+        run: npm ci && npm run build
       - run: npm ci
       - run: npx playwright install --with-deps --only-shell chromium
       - name: Проверка
-        run: npm run ${{ inputs.release && 'check:release' || 'check' }} -- ${{ github.event_name == 'pull_request' && '--base ../../.base-site' || '' }}
+        run: npm run ${{ inputs.release && 'check:release' || 'check' }} -- --site ../../dist ${{ github.event_name == 'pull_request' && '--base ../../.base-site' || '' }}
       - name: Скриншоты и отчёт
         if: always()
         uses: actions/upload-artifact@v4
