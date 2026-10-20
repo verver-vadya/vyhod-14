@@ -1,0 +1,85 @@
+---
+// «Куда летим»: Земля из светодиодных точек, на ней горят наши страны. Нажали на страну на шаре или в списке —
+// от Петербурга к ней поднимается дуга рейса и выезжает посадочный талон с визой, сроком и ценой.
+// Без JS: картинка Земли и список стран ссылками. Без WebGL и при «уменьшить движение» — плоская точечная карта (globe-view.ts).
+import { countries, distanceKm, home, hubs } from "../data/countries";
+import { asset, rub, url } from "../lib/url";
+const km = (n: number) => `${n.toLocaleString("ru-RU").replace(/\s/g, " ")} км`;
+---
+<section class="section globe" id="globe" data-sky="sunset" aria-labelledby="globe-title">
+  <div class="wrap">
+    <div class="section__head reveal">
+      <p class="eyebrow eyebrow--ink">04 / Куда летим</p>
+      <h2 id="globe-title">Десять стран, куда мы оформляем визы</h2>
+      <p class="lead">Покрутите Землю и нажмите на страну: покажем маршрут из Петербурга, срок и цену.</p>
+    </div>
+
+    <div class="globe__board">
+      <div class="globe__stage" id="globe-stage" data-overlap-ok>
+        <img class="globe__poster" src={asset("img/globe-poster.webp")} alt="" width="900" height="900" loading="lazy" decoding="async">
+        <canvas class="globe__canvas" id="globe-canvas" aria-hidden="true"></canvas>
+        <span class="globe__tag globe__tag--home" id="globe-home" aria-hidden="true" data-overlap-ok><b>{home.code}</b> {home.city}</span>
+        <span class="globe__tag globe__tag--dest is-off" id="globe-dest" aria-hidden="true" data-overlap-ok></span>
+        <span class="globe__tag globe__tag--hover is-off" id="globe-hover" aria-hidden="true" data-overlap-ok></span>
+        <p class="globe__hint" id="globe-hint" aria-hidden="true" data-overlap-ok>Тяните, чтобы повернуть</p>
+      </div>
+
+      <div class="globe__side">
+        <div class="board__head">
+          <span class="board__title">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 19h19M3.4 13.7l2.6 2.1 4.1-1.1 9.7-2.6c.9-.2 1.4-1.1 1.2-2-.2-.9-1.1-1.4-2-1.2l-3.4.9-5.6-4.9-2 .5 3.2 5.6-3.6 1-2-1.6-1.6.4 1.4 3z" fill="currentColor"/></svg>
+            Вылеты из Петербурга
+          </span>
+          <span class="board__clock">Пулково · {home.code}</span>
+        </div>
+
+        <ul class="globe__list" id="globe-list">
+          {countries.map((c) => (
+            <li>
+              <a class="groute" href={url(`/vizy/${c.slug}/`)} data-slug={c.slug}>
+                <span class="groute__code">{c.code}</span>
+                <span class="groute__name">{c.name}</span>
+                <span class="groute__days">от {c.days} дн.</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <div class="globe__cards" id="globe-cards" aria-live="polite">
+          <div class="globe__empty" id="globe-empty">
+            <span class="label">Посадочный талон</span>
+            <div class="gcard__route" aria-hidden="true">
+              <span><b>{home.code}</b><small>{home.city}</small></span>
+              <span class="gcard__line"></span>
+              <span><b>???</b><small>Куда летим?</small></span>
+            </div>
+            <p>Выберите страну на Земле или в списке, и мы проложим к ней маршрут</p>
+          </div>
+          {countries.map((c) => {
+            const h = hubs[c.slug];
+            return (
+              <article class="gcard" data-slug={c.slug} hidden>
+                <div class="gcard__top">
+                  <span class="label">Рейс 14 · {km(distanceKm(home, h))}</span>
+                  <span class="label">{c.code}</span>
+                </div>
+                <div class="gcard__route" aria-label={`${home.city} — ${h.city}`}>
+                  <span><b>{home.code}</b><small>{home.city}</small></span>
+                  <span class="gcard__line" aria-hidden="true"></span>
+                  <span><b>{h.code}</b><small>{h.city}</small></span>
+                </div>
+                <h3 class="gcard__country">{c.name}</h3>
+                <dl class="pass__meta">
+                  <div><dt>Виза</dt><dd>{c.visa.replace("Электронная ", "")}</dd></div>
+                  <div><dt>Срок</dt><dd>от {c.days} дней</dd></div>
+                  <div><dt>Услуги</dt><dd>от {rub(c.price)}</dd></div>
+                </dl>
+                <a class="btn btn--signal btn--sm gcard__go" href={url(`/vizy/${c.slug}/`)}><span class="btn__in">Оформить визу {c.to} <span aria-hidden="true">→</span></span></a>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

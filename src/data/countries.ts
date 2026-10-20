@@ -165,6 +165,28 @@ export const countries: Country[] = [
 
 export const bySlug = (slug: string) => countries.find((c) => c.slug === slug)!;
 
+// Аэропорты для Земли на главной: от Пулково к аэропорту страны рисуется дуга рейса
+export interface Hub { code: string; city: string; lat: number; lon: number }
+export const home: Hub = { code: "LED", city: "Петербург", lat: 59.8, lon: 30.26 };
+export const hubs: Record<string, Hub> = {
+  italiya: { code: "FCO", city: "Рим", lat: 41.8, lon: 12.25 },
+  ispaniya: { code: "MAD", city: "Мадрид", lat: 40.47, lon: -3.56 },
+  franciya: { code: "CDG", city: "Париж", lat: 49.01, lon: 2.55 },
+  greciya: { code: "ATH", city: "Афины", lat: 37.94, lon: 23.94 },
+  vengriya: { code: "BUD", city: "Будапешт", lat: 47.44, lon: 19.26 },
+  kitay: { code: "PEK", city: "Пекин", lat: 40.08, lon: 116.58 },
+  yaponiya: { code: "NRT", city: "Токио", lat: 35.77, lon: 140.39 },
+  indiya: { code: "DEL", city: "Дели", lat: 28.56, lon: 77.1 },
+  vetnam: { code: "HAN", city: "Ханой", lat: 21.22, lon: 105.81 },
+  indoneziya: { code: "DPS", city: "Бали", lat: -8.75, lon: 115.17 },
+};
+// Расстояние по дуге большого круга, км
+export const distanceKm = (a: Hub, b: Hub) => {
+  const r = Math.PI / 180;
+  const h = Math.sin(((b.lat - a.lat) * r) / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(((b.lon - a.lon) * r) / 2) ** 2;
+  return Math.round((2 * 6371 * Math.asin(Math.sqrt(h))) / 10) * 10;
+};
+
 // Пакеты услуг: цена страны плюс доплата пакета
 export const packages = [
   {
