@@ -4,8 +4,9 @@ import { countries } from "../data/countries";
 import { rowOf } from "../lib/board";
 import { gsap } from "./motion";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -16,46 +17,71 @@ const store = {
 };
 const fmtTime = (tz: string) => new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: tz }).format(new Date());
 
-// ---------- заставка «посадка»: талон, штамп «Одобрено», отрыв корешка ----------
+// ---------- заставка «посадка» и первый экран одной сценой ----------
+// Талон въезжает, штамп «Одобрено», корешок отрывается, талон уходит, и пока гаснет фон,
+// под ним проявляется первый экран: фото чуть отъезжает, заголовок поднимается строками,
+// за ним кнопки, виджеты и табло. Табло зажигает строки последним.
 const html = document.documentElement;
 let introResolve!: () => void;
 const introDone = new Promise<void>((r) => (introResolve = r));
 const intro = document.getElementById("intro")!;
 
-function finishIntro() {
-  store.set("v14-intro", "1");
-  html.classList.remove("has-intro");
-  intro.remove();
-  introResolve();
-}
-
 if (!html.classList.contains("has-intro")) {
   intro.remove();
   introResolve();
 } else {
-  const pass = intro.querySelector(".intro__pass")!;
-  const stamp = intro.querySelector(".intro__stamp")!;
-  const stub = intro.querySelector(".intro__stub")!;
   intro.querySelector(".intro__time")!.textContent = fmtTime("Europe/Moscow");
-  const anims = [
-    pass.animate([{ opacity: 0, transform: "translateY(48px) rotate(-2deg)" }, { opacity: 1, transform: "none" }], { duration: 520, easing: "cubic-bezier(0.35, 0, 0.15, 1)", fill: "both" }),
-    // Штамп бьёт с ускорением: так выглядит удар, а не наплыв
-    stamp.animate([{ opacity: 0, transform: "rotate(-14deg) scale(1.9)" }, { opacity: 0.92, transform: "rotate(-12deg) scale(1)" }], { duration: 220, delay: 640, easing: "cubic-bezier(0.55, 0, 0.9, 0.45)", fill: "both" }),
-    stub.animate([{ transform: "none", opacity: 1 }, { transform: "translate(70px, 28px) rotate(11deg)", opacity: 0 }], { duration: 560, delay: 1120, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "both" }),
-    pass.animate([{ opacity: 1 }, { opacity: 0, transform: "translateX(-24px) scale(0.98)" }], { duration: 420, delay: 1320, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }),
-  ];
-  const bg = intro.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 520, delay: 1450, easing: "cubic-bezier(0.35, 0, 0.15, 1)", fill: "forwards" });
-  const early = setTimeout(introResolve, 1250);
-  bg.finished.then(finishIntro, () => {});
+  // Шрифты подгружены заранее; ждём их, чтобы строки заголовка разбились как на экране, но не дольше 600 мс
+  Promise.race([fontsReady, new Promise((r) => setTimeout(r, 600))]).then(playIntro);
+}
 
+function playIntro() {
+  const pass = intro.querySelector(".intro__pass")!;
+  const title = document.querySelector<HTMLElement>(".hero__title")!;
+  const split = new SplitText(title, { type: "lines", mask: "lines" });
+  const text = document.querySelectorAll(".hero .eyebrow, .hero__actions .btn");
+  // Курс евро может появиться позже, пока идёт сцена: его тоже ведём, чтобы он не возник раньше соседей
+  const widgets = document.querySelectorAll(".widgets > .widget");
+  const board = document.querySelector(".hero-board .board");
+
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    store.set("v14-intro", "1");
+    html.classList.remove("has-intro");
+    intro.remove();
+  };
+
+  const tl = gsap.timeline({
+    onComplete: () => {
+      split.revert();
+      gsap.set([title, text, widgets, board, ".hero__media"], { clearProps: "all" });
+    },
+  });
+  tl.fromTo(pass, { opacity: 0, y: 48, rotation: -2 }, { opacity: 1, y: 0, rotation: 0, duration: 0.52 })
+    // Штамп бьёт с ускорением: так выглядит удар, а не наплыв
+    .fromTo(".intro__stamp", { opacity: 0, rotation: -14, scale: 1.9 }, { opacity: 0.92, rotation: -12, scale: 1, duration: 0.22, ease: "hit" }, 0.64)
+    .to(".intro__stub", { x: 70, y: 28, rotation: 11, opacity: 0, duration: 0.56, ease: "close" }, 1.12)
+    .to(pass, { x: -24, scale: 0.98, opacity: 0, duration: 0.42, ease: "close" }, 1.32)
+    .addLabel("hero", 1.45)
+    .to(intro, { opacity: 0, duration: 0.52, onComplete: finish }, "hero")
+    .fromTo(".hero__media", { scale: 1.06 }, { scale: 1, duration: 1.8 }, "hero")
+    .fromTo(text[0], { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5 }, "hero+=0.1")
+    .set(title, { opacity: 1 }, "hero")
+    .fromTo(split.lines, { yPercent: 105 }, { yPercent: 0, duration: 0.7, stagger: 0.08 }, "hero+=0.15")
+    .fromTo([...text].slice(1), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.05 }, "hero+=0.5")
+    .fromTo(widgets, { opacity: 0, x: 16 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.05 }, "hero+=0.55")
+    .fromTo(board, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7 }, "hero+=0.65")
+    // Строки табло начинают загораться, когда само табло почти встало на место
+    .call(introResolve, [], "hero+=1");
+
+  // Пропуск: сразу к моменту, когда заставка гаснет; первый экран доигрывает как обычно
   let skipped = false;
   const skip = () => {
     if (skipped) return;
     skipped = true;
-    clearTimeout(early);
-    anims.forEach((a) => a.pause());
-    bg.cancel();
-    intro.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }).finished.then(finishIntro);
+    if (tl.time() < tl.labels.hero) tl.seek("hero");
     removeEventListener("keydown", skip);
     removeEventListener("wheel", skip);
     removeEventListener("touchstart", skip);

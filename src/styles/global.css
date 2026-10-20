@@ -154,6 +154,8 @@ a[href^="tel:"] { white-space: nowrap; }
 html.has-intro body { overflow: hidden; }
 /* Шапка остаётся над заставкой: меню можно открыть сразу */
 html.has-intro .header { z-index: 210; }
+/* Первый экран проявляется вместе с уходом заставки (src/scripts/home.ts), до этого скрыт под ней */
+html.has-intro :is(.hero .eyebrow, .hero__title, .hero__actions .btn, .widgets > .widget, .hero-board .board) { opacity: 0; }
 html.has-intro .intro {
   display: grid; place-items: center;
   position: fixed; inset: 0; z-index: 200;
