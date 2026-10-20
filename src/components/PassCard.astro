@@ -4,7 +4,7 @@ import { asset, rub, url } from "../lib/url";
 interface Props { c: Country; eager?: boolean }
 const { c, eager = false } = Astro.props;
 ---
-<a class="pass" href={url(`/vizy/${c.slug}/`)} data-group={c.group}>
+<a class="pass reveal" href={url(`/vizy/${c.slug}/`)} data-group={c.group}>
   <div class="pass__main">
     <div class="pass__photo">
       <img src={asset(`img/${c.slug}-480.webp`)} srcset={`${asset(`img/${c.slug}-480.webp`)} 480w, ${asset(`img/${c.slug}-960.webp`)} 960w`} sizes="(max-width: 760px) 80vw, 420px" alt={c.photo.alt} loading={eager ? "eager" : "lazy"} width="480" height="322">

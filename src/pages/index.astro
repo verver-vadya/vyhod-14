@@ -193,8 +193,8 @@ const popular = ["italiya", "ispaniya", "franciya", "kitay", "yaponiya", "indiya
         <h2 id="extras-title">Всё, что консульство попросит рядом с анкетой</h2>
         <a class="link-arrow" href={url("/uslugi/")}>Все услуги и цены <span aria-hidden="true">→</span></a>
       </div>
-      <ul class="pricelist reveal">
-        {extras.slice(0, 6).map(([name, price]) => <li><span>{name}</span><span class="dots" aria-hidden="true"></span><b>{price}</b></li>)}
+      <ul class="pricelist">
+        {extras.slice(0, 6).map(([name, price]) => <li class="reveal"><span>{name}</span><span class="dots" aria-hidden="true"></span><b>{price}</b></li>)}
       </ul>
     </div>
   </section>

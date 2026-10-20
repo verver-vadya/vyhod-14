@@ -733,6 +733,12 @@ html.has-menu { overflow: hidden; }
 /* ---------- появление при прокрутке: прячем только при работающем JS ---------- */
 .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity var(--d-reveal) var(--ease-soft) var(--delay, 0ms), transform var(--d-reveal) var(--ease-soft) var(--delay, 0ms); }
 .js .reveal.is-in { opacity: 1; transform: none; }
+/* Заголовок, разбитый на строки (src/scripts/lines.ts): сам блок виден сразу, движение у строк и подписей */
+.js .reveal.is-split { transition: none; }
+/* Маска строки заголовка в анимации: чуть выше и ниже строки, чтобы не срезать хвосты «р», «у» и «Й».
+   После разбивки заголовок колонкой флексов: так отрицательные отступы соседних масок не схлопываются и строки стоят как в тексте */
+.is-lines { display: flex; flex-direction: column; }
+.ln-mask { padding-block: 0.12em 0.18em; margin-block: -0.12em -0.18em; }
 
 /* ---------- переход между страницами ---------- */
 @view-transition { navigation: auto; }

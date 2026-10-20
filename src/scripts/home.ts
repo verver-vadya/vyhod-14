@@ -38,7 +38,8 @@ if (!html.classList.contains("has-intro")) {
 function playIntro() {
   const pass = intro.querySelector(".intro__pass")!;
   const title = document.querySelector<HTMLElement>(".hero__title")!;
-  const split = new SplitText(title, { type: "lines", mask: "lines" });
+  const split = new SplitText(title, { type: "lines", mask: "lines", linesClass: "ln" });
+  title.classList.add("is-lines");
   const text = document.querySelectorAll(".hero .eyebrow, .hero__actions .btn");
   // Курс евро может появиться позже, пока идёт сцена: его тоже ведём, чтобы он не возник раньше соседей
   const widgets = document.querySelectorAll(".widgets > .widget");
@@ -56,6 +57,7 @@ function playIntro() {
   const tl = gsap.timeline({
     onComplete: () => {
       split.revert();
+      title.classList.remove("is-lines");
       gsap.set([title, text, widgets, board, ".hero__media"], { clearProps: "all" });
     },
   });
@@ -69,7 +71,7 @@ function playIntro() {
     .fromTo(".hero__media", { scale: 1.06 }, { scale: 1, duration: 1.8 }, "hero")
     .fromTo(text[0], { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5 }, "hero+=0.1")
     .set(title, { opacity: 1 }, "hero")
-    .fromTo(split.lines, { yPercent: 105 }, { yPercent: 0, duration: 0.7, stagger: 0.08 }, "hero+=0.15")
+    .fromTo(split.lines, { yPercent: 130 }, { yPercent: 0, duration: 0.7, stagger: 0.08 }, "hero+=0.15")
     .fromTo([...text].slice(1), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.05 }, "hero+=0.5")
     .fromTo(widgets, { opacity: 0, x: 16 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.05 }, "hero+=0.55")
     .fromTo(board, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7 }, "hero+=0.65")

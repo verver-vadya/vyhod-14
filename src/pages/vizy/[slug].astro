@@ -58,8 +58,8 @@ const evisa = c.group === "evisa";
         <p class="lead">Точный список пришлём после звонка: он зависит от работы, возраста и истории поездок.</p>
       </div>
       <div class="notes">
-        <ol class="docs reveal">
-          {c.docs.map((d) => <li>{d}</li>)}
+        <ol class="docs">
+          {c.docs.map((d) => <li class="reveal">{d}</li>)}
         </ol>
         {c.notes.map((n) => (
           <div class="note reveal"><span class="label">Важно</span><p>{n}</p></div>

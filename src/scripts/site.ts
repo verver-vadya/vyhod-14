@@ -45,8 +45,10 @@ if (menu && burger && typeof menu.showModal === "function") {
   matchMedia("(min-width: 1101px)").addEventListener("change", (e) => { if (e.matches && menu.open) menu.close(); });
 }
 
-// ---------- появление при прокрутке: один раз, несколько блоков сразу — по очереди, не больше 4 шагов ----------
+// ---------- появление при прокрутке: один раз, несколько блоков сразу — по очереди, не больше 4 шагов; карточки и строки списков появляются каждая сама ----------
 const reveals = document.querySelectorAll<HTMLElement>(".reveal");
+// Заголовки разделов поднимаются по строкам (GSAP SplitText): модуль подгружаем, только если они есть и движение не выключено
+const lines = document.querySelector(".section__head.reveal h2") && !matchMedia("(prefers-reduced-motion: reduce)").matches ? import("./lines") : null;
 if (reveals.length) {
   if (!("IntersectionObserver" in window)) reveals.forEach((el) => el.classList.add("is-in"));
   else {
@@ -55,9 +57,14 @@ if (reveals.length) {
       for (const e of entries) {
         if (!e.isIntersecting) continue;
         const el = e.target as HTMLElement;
-        el.style.setProperty("--delay", `${Math.min(n++, 4) * 50}ms`);
-        el.classList.add("is-in");
+        const step = Math.min(n++, 4) * 50;
         io.unobserve(el);
+        if (lines && el.matches(".section__head") && el.querySelector("h2")) {
+          lines.then((m) => m.riseHead(el, step / 1000)).catch(() => el.classList.add("is-in"));
+          continue;
+        }
+        el.style.setProperty("--delay", `${step}ms`);
+        el.classList.add("is-in");
       }
     }, { rootMargin: "0px 0px -12% 0px" });
     reveals.forEach((el) => io.observe(el));

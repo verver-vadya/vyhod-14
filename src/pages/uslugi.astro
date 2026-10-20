@@ -63,8 +63,8 @@ import { rub, url } from "../lib/url";
         <p class="eyebrow eyebrow--ink">03 / Отдельно</p>
         <h2 id="extras-title">Можно заказать без пакета</h2>
       </div>
-      <ul class="pricelist reveal">
-        {extras.map(([name, price]) => <li><span>{name}</span><span class="dots" aria-hidden="true"></span><b>{price}</b></li>)}
+      <ul class="pricelist">
+        {extras.map(([name, price]) => <li class="reveal"><span>{name}</span><span class="dots" aria-hidden="true"></span><b>{price}</b></li>)}
       </ul>
     </div>
   </section>
