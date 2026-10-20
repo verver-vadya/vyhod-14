@@ -509,6 +509,12 @@ html.has-menu { overflow: hidden; }
 .leaf { transform-origin: 0 50%; transform-style: preserve-3d; transform: rotateY(calc(var(--a, 0) * 1deg)); }
 .leaf__face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
 .leaf__back { transform: rotateY(180deg); }
+/* Гибкий лист (src/scripts/home.ts): полосы вложены друг в друга, каждая со своим доворотом --b */
+.strip { position: absolute; top: 0; left: 0; width: calc(var(--pw) / 6 + 0.5px); height: 100%; transform-origin: 0 50%; transform-style: preserve-3d; transform: rotateY(calc(var(--b, 0) * 1deg)); }
+.slice { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.slice--back { transform: rotateY(180deg); }
+.leaf__face.slice__face { inset: auto; top: 0; left: calc(var(--pw) / -6 * var(--i)); width: var(--pw); height: 100%; transform: none; backface-visibility: visible; -webkit-backface-visibility: visible; }
+.slice__shade { position: absolute; inset: 0; background: #16181c; opacity: 0; pointer-events: none; }
 .book__page, .leaf__face:not(.cover) {
   background:
     linear-gradient(90deg, rgba(22, 24, 28, 0.1), rgba(22, 24, 28, 0) 12%),

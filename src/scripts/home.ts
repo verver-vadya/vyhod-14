@@ -249,8 +249,10 @@ const bookWrap = document.getElementById("book-wrap")!;
 const leaves = [...book.querySelectorAll<HTMLElement>(".leaf")].sort((a, b) => +a.dataset.leaf! - +b.dataset.leaf!);
 const marks = [...book.querySelectorAll<HTMLElement>("[data-s]")];
 const listItems = [...document.querySelectorAll("#passport-list li")];
-const STEPS = [[0.24, 0.36], [0.47, 0.6], [0.5, 0.62], [0.79, 0.95]];
-const LEAF_TURNS = [[0.06, 0.26], [0.4, 0.56], [0.72, 0.86]];
+// Каждый переворот начинается ровно с разворота (см. SPREADS ниже), чтобы после нажатия не было паузы
+const STEPS = [[0.2, 0.35], [0.48, 0.6], [0.51, 0.63], [0.78, 0.98]];
+const LEAF_TURNS = [[0, 0.22], [0.37, 0.53], [0.63, 0.8]];
+marks.forEach((m, i) => (m.dataset.mi = String(i)));
 const stepCount: Record<string, number> = {};
 const markIndex = new Map<HTMLElement, number>();
 marks.forEach((m) => {
@@ -259,13 +261,77 @@ marks.forEach((m) => {
   markIndex.set(m, stepCount[s] - 1);
 });
 
+// Гибкий лист: каждая страница режется на вертикальные полосы, вложенные друг в друга.
+// Полоса поворачивается чуть сильнее предыдущей, и лист в полёте выгибается, как бумага.
+// В каждой полосе лежит копия лица страницы, сдвинутая так, что видна только её часть.
+const STRIPS = 6;
+const stripsOf = new Map<HTMLElement, HTMLElement[]>();
+const shadesOf = new Map<HTMLElement, HTMLElement[]>();
+const copiesOf = new Map<HTMLElement, HTMLElement[]>();
+leaves.forEach((leaf) => {
+  const front = leaf.querySelector<HTMLElement>(".leaf__front")!;
+  const back = leaf.querySelector<HTMLElement>(".leaf__back")!;
+  const strips: HTMLElement[] = [];
+  const shades: HTMLElement[] = [];
+  let parent: HTMLElement = leaf;
+  for (let i = 0; i < STRIPS; i++) {
+    const strip = document.createElement("div");
+    strip.className = "strip";
+    if (i) strip.style.left = "calc(100% - 0.5px)";
+    for (const [face, side] of [[front, "front"], [back, "back"]] as const) {
+      const slice = document.createElement("div");
+      slice.className = `slice slice--${side}`;
+      const copy = face.cloneNode(true) as HTMLElement;
+      copy.classList.add("slice__face");
+      // Оборот страницы виден зеркально: полоса у корешка показывает край оборота, дальний от корешка
+      copy.style.setProperty("--i", String(side === "front" ? i : STRIPS - 1 - i));
+      const shade = document.createElement("i");
+      shade.className = "slice__shade";
+      slice.append(copy, shade);
+      strip.append(slice);
+      shades.push(shade);
+      copy.querySelectorAll<HTMLElement>("[data-s]").forEach((m) => {
+        const orig = marks[+m.dataset.mi!];
+        if (!copiesOf.has(orig)) copiesOf.set(orig, []);
+        copiesOf.get(orig)!.push(m);
+      });
+    }
+    parent.append(strip);
+    strips.push(strip);
+    parent = strip;
+  }
+  front.remove();
+  back.remove();
+  stripsOf.set(leaf, strips);
+  shadesOf.set(leaf, shades);
+});
+
+// Изгиб на полосу в градусах: в середине переворота лист выгнут сильнее всего, лёг — снова ровный
+const BEND = 9;
+// Переворот по кривой проекта soft: лист сразу трогается с места и мягко ложится
+const turnEase = gsap.parseEase("soft");
+const lastA = leaves.map(() => 0);
+const lag = leaves.map(() => 1);
+
 function renderPassport(p: number) {
-  const open = ease(seg(p, LEAF_TURNS[0][0], LEAF_TURNS[0][1]));
+  const open = turnEase(seg(p, LEAF_TURNS[0][0], LEAF_TURNS[0][1]));
   book.style.setProperty("--shift", (1 - open).toFixed(4));
   leaves.forEach((leaf, i) => {
-    const a = -180 * ease(seg(p, LEAF_TURNS[i][0], LEAF_TURNS[i][1]));
+    const a = -180 * turnEase(seg(p, LEAF_TURNS[i][0], LEAF_TURNS[i][1]));
+    // Свободный край отстаёт от корешка: при листании вперёд гнётся в одну сторону, назад — в другую
+    if (a !== lastA[i]) lag[i] = a < lastA[i] ? 1 : -1;
+    lastA[i] = a;
+    const b = BEND * Math.sin((Math.PI * -a) / 180) * lag[i];
     leaf.style.setProperty("--a", a.toFixed(2));
     leaf.style.zIndex = String(a > -90 ? 10 - i : 10 + i);
+    stripsOf.get(leaf)!.forEach((st, k) => st.style.setProperty("--b", k ? b.toFixed(2) : "0"));
+    // Тень на изгибе: чем круче полоса повёрнута к свету, тем она темнее
+    const shades = shadesOf.get(leaf)!;
+    for (let k = 0; k < STRIPS; k++) {
+      const turn = a + b * k;
+      const sh = (0.16 * Math.abs(Math.sin((turn * Math.PI) / 180)) * Math.abs(b)) / BEND;
+      shades[k * 2].style.opacity = shades[k * 2 + 1].style.opacity = sh.toFixed(3);
+    }
   });
   const stepK = STEPS.map(([a, b]) => seg(p, a, b));
   marks.forEach((m) => {
@@ -274,7 +340,9 @@ function renderPassport(p: number) {
     const n = stepCount[m.dataset.s!];
     const len = (b - a) * (n > 1 ? 0.55 : 1);
     const start = a + (n > 1 ? (markIndex.get(m)! / (n - 1)) * (b - a) * 0.45 : 0);
-    m.style.setProperty("--k", ease(seg(p, start, start + len)).toFixed(3));
+    const k = ease(seg(p, start, start + len)).toFixed(3);
+    m.style.setProperty("--k", k);
+    copiesOf.get(m)?.forEach((c) => c.style.setProperty("--k", k));
   });
   listItems.forEach((li, i) => li.classList.toggle("is-on", stepK[i] > 0.5));
 }
@@ -307,9 +375,10 @@ function goTo(i: number) {
   spread = clamp(i, 0, SPREADS.length - 1);
   if (spread !== prev) showSpread(Math.sign(spread - prev));
   const to = SPREADS[spread];
-  // Один разворот — чуть меньше секунды: страница успевает перевернуться, штампы лечь следом
+  // Лента идёт равномерно, плавность даёт кривая каждого переворота и штампа.
+  // Один разворот — около полутора секунд: страница спокойно переворачивается, штампы ложатся следом
   gsap.to(book$, {
-    p: to, duration: reduce.matches ? 0 : 0.35 + Math.abs(to - from) * 1.9, ease: "soft", overwrite: true,
+    p: to, duration: reduce.matches ? 0 : 0.3 + Math.abs(to - from) * 4.8, ease: "none", overwrite: true,
     onUpdate: () => renderPassport(book$.p),
   });
 }
