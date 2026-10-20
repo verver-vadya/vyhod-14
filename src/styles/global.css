@@ -446,13 +446,21 @@ html.has-menu { overflow: hidden; }
 .stop p { color: var(--ink-2); max-width: 34ch; }
 
 /* ---------- паспорт ---------- */
-.passport { height: 340vh; position: relative; }
-.passport__sticky { position: sticky; top: 0; height: 100vh; height: 100svh; display: grid; align-items: center; overflow: hidden; }
+.passport { position: relative; }
+.passport__box { padding: var(--s9) 0; overflow: hidden; }
 .passport__in { display: grid; grid-template-columns: 5fr 7fr; gap: var(--s7); align-items: center; width: 100%; }
 .passport__text { display: grid; gap: var(--s4); }
 .passport__lead { color: var(--ink-2); max-width: 40ch; }
 .passport__list { list-style: none; margin: var(--s3) 0 0; padding: 0; display: grid; gap: var(--s2); }
 .passport__list li { display: flex; align-items: center; gap: var(--s3); color: var(--ink-2); transition: color var(--d-hover) var(--ease-hover); }
+/* Пункт списка открывает свой разворот паспорта */
+.passport__list button {
+  min-height: var(--tap); padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+  text-decoration: underline transparent; text-underline-offset: 4px; transition: text-decoration-color var(--d-small) var(--ease-quick);
+}
+.passport__list button:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 4px; }
+.passport__list button:active { opacity: 0.7; }
+@media (hover: hover) and (pointer: fine) { .passport__list button:hover { text-decoration-color: currentColor; } }
 .passport__list li::before {
   content: ""; flex: none; width: 22px; height: 22px; border-radius: 50%;
   box-shadow: inset 0 0 0 1.5px rgba(22, 24, 28, 0.3);
@@ -462,7 +470,32 @@ html.has-menu { overflow: hidden; }
 .passport__list li.is-on { color: var(--ink); font-weight: 600; }
 .passport__list li.is-on::before { background-color: var(--signal); box-shadow: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.5 5 9l5-6' fill='none' stroke='%2316181c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 
-.book-wrap { display: grid; place-items: center; }
+.book-col { display: grid; justify-items: center; gap: var(--s4); }
+/* Паспорт тянут пальцем по горизонтали, вертикальная прокрутка страницы остаётся */
+.book-wrap { display: grid; place-items: center; touch-action: pan-y; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.book-nav { display: flex; align-items: center; gap: var(--s4); }
+/* Подпись постоянной ширины: кнопки не двигаются. Название до двух строк прижато к строке с номером, номер всегда на своём месте */
+.book-nav__label { display: grid; grid-template-rows: calc(2 * 1.3em) auto; gap: 2px; width: 12ch; text-align: center; font: 500 var(--fs-xs)/1.3 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.book-nav__name { align-self: end; text-wrap: balance; }
+.book-nav__count { color: var(--ink); }
+.book-nav__btn {
+  display: grid; place-items: center; width: var(--tap); height: var(--tap); padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  background: var(--ink); color: var(--paper);
+  transition: background-color var(--d-small) var(--ease-quick), transform var(--d-press) var(--ease-quick), opacity var(--d-small) var(--ease-quick);
+}
+.book-nav__btn svg { transition: transform var(--d-small) var(--ease-quick); }
+/* Нажатие: кнопка чуть сжимается, стрелка толкается в свою сторону */
+.book-nav__btn:active { transform: scale(0.94); }
+.book-nav__btn[data-dir="1"]:active svg { transform: translateX(3px); }
+.book-nav__btn[data-dir="-1"]:active svg { transform: translateX(-3px); }
+.book-nav__btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.book-nav__btn:disabled { opacity: 0.25; transform: none; pointer-events: none; }
+@media (hover: hover) and (pointer: fine) {
+  .book-nav__btn:hover { background: #2a2d33; }
+  .book-nav__btn[data-dir="1"]:hover svg { transform: translateX(2px); }
+  .book-nav__btn[data-dir="-1"]:hover svg { transform: translateX(-2px); }
+}
+.book-hint { font-size: var(--fs-xs); color: var(--ink-2); text-align: center; }
 .book {
   --pw: clamp(150px, 25vw, 360px);
   --ph: calc(var(--pw) * 1.42);
@@ -476,9 +509,18 @@ html.has-menu { overflow: hidden; }
 .leaf { transform-origin: 0 50%; transform-style: preserve-3d; transform: rotateY(calc(var(--a, 0) * 1deg)); }
 .leaf__face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
 .leaf__back { transform: rotateY(180deg); }
+/* Гибкий лист (src/scripts/home.ts): полосы вложены друг в друга, каждая со своим доворотом --b */
+.strip { position: absolute; top: 0; left: 0; width: calc(var(--pw) / 6 + 0.5px); height: 100%; transform-origin: 0 50%; transform-style: preserve-3d; transform: rotateY(calc(var(--b, 0) * 1deg)); }
+.slice { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.slice--back { transform: rotateY(180deg); }
+.leaf__face.slice__face { inset: auto; top: 0; left: calc(var(--pw) / -6 * var(--i)); width: var(--pw); height: 100%; transform: none; backface-visibility: visible; -webkit-backface-visibility: visible; }
+.slice__shade { position: absolute; inset: 0; background: #16181c; opacity: 0; pointer-events: none; }
+/* Водяной знак verver: ромб «Отражение» в кольце из надписи, как защитная печать бланка */
+.book { --watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3Cpath id='r' d='M100 100m-84 0a84 84 0 1 1 168 0a84 84 0 1 1-168 0'/%3E%3C/defs%3E%3Cg fill='none' stroke='%232f3a33' stroke-opacity='.11'%3E%3Ccircle cx='100' cy='100' r='94' stroke-width='.8'/%3E%3Ccircle cx='100' cy='100' r='75' stroke-width='.8'/%3E%3C/g%3E%3Ctext font-family='Helvetica,Arial,sans-serif' font-size='10.5' font-weight='700' fill='%232f3a33' fill-opacity='.1'%3E%3CtextPath href='%23r' textLength='527' lengthAdjust='spacing'%3EVERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 %3C/textPath%3E%3C/text%3E%3Cg transform='translate(100 100) scale(1.05)' fill='%232f3a33'%3E%3Cpolygon points='-50,0 0,-50 50,0 33,0 0,-33 -33,0' fill-opacity='.045'/%3E%3Cpolygon points='-50,0 0,50 50,0 33,0 0,33 -33,0' fill-opacity='.1'/%3E%3C/g%3E%3C/svg%3E") center 46% / 78% no-repeat; }
 .book__page, .leaf__face:not(.cover) {
   background:
     linear-gradient(90deg, rgba(22, 24, 28, 0.1), rgba(22, 24, 28, 0) 12%),
+    var(--watermark),
     repeating-radial-gradient(circle at 30% 120%, rgba(120, 140, 120, 0.07) 0 1px, transparent 1px 7px),
     #f5f0e4;
   border-radius: 0 8px 8px 0;
@@ -487,6 +529,7 @@ html.has-menu { overflow: hidden; }
 .leaf__back:not(.cover), .datapage {
   background:
     linear-gradient(270deg, rgba(22, 24, 28, 0.1), rgba(22, 24, 28, 0) 12%),
+    var(--watermark),
     repeating-radial-gradient(circle at 70% 120%, rgba(120, 140, 120, 0.07) 0 1px, transparent 1px 7px),
     #f5f0e4;
   border-radius: 8px 0 0 8px;
@@ -807,7 +850,6 @@ html.has-menu { overflow: hidden; }
   .pass__meta dd { font-size: 13px; }
   .route__track { display: none; }
   .route__stops { grid-template-columns: 1fr; gap: var(--s6); border-left: 2px dashed rgba(22, 24, 28, 0.25); padding-left: var(--s5); }
-  .passport { height: 300vh; }
   .passport__in { grid-template-columns: 1fr; gap: var(--s5); align-content: center; }
   .passport__lead, .passport__list { display: none; }
   .passport__text h2 { font-size: 1.75rem; }
@@ -834,8 +876,6 @@ html.has-menu { overflow: hidden; }
   .menu.is-open .menu__panel { opacity: 1; transition: opacity var(--d-open) var(--ease-soft); }
   .menu__nav a, .menu__foot, .menu.is-open .menu__nav a, .menu.is-open .menu__foot { transform: none; }
   .js .reveal { transform: none; }
-  .passport { height: auto; }
-  .passport__sticky { position: static; height: auto; padding: var(--s9) 0; }
   ::view-transition-old(root) { animation-name: fade-out; }
   ::view-transition-new(root) { animation-name: fade; }
 }
