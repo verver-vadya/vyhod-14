@@ -281,21 +281,31 @@ function renderPassport(p: number) {
 
 // Развороты: обложка, данные и Италия, Китай и Япония, отметки. p — положение «ленты» renderPassport
 const SPREADS = [0, 0.37, 0.63, 1];
-const SPREAD_NAMES = ["Обложка", "Италия", "Китай и Япония", "Отметки о въезде"];
+// Неразрывный пробел держит «и Япония» вместе, когда название переносится
+const SPREAD_NAMES = ["Обложка", "Италия", "Китай и\u00a0Япония", "Отметки о въезде"];
 const navBtns = [...document.querySelectorAll<HTMLButtonElement>(".book-nav__btn")];
-const bookLabel = document.getElementById("book-label")!;
+const bookName = document.getElementById("book-name")!;
+const bookCount = document.getElementById("book-count")!;
 const book$ = { p: 0 };
 let spread = 0;
 
-function showSpread() {
+// Подпись разворота уезжает в сторону листания, новая приезжает с другой стороны; строка с номером стоит на месте
+function showSpread(dir = 0) {
   navBtns[0].disabled = spread === 0;
   navBtns[1].disabled = spread === SPREADS.length - 1;
-  bookLabel.textContent = `${SPREAD_NAMES[spread]} · ${spread + 1} из ${SPREADS.length}`;
+  const name = SPREAD_NAMES[spread], count = `${spread + 1} из ${SPREADS.length}`;
+  if (!dir || reduce.matches) { bookName.textContent = name; bookCount.textContent = count; return; }
+  gsap.killTweensOf([bookName, bookCount]);
+  gsap.timeline()
+    .to([bookName, bookCount], { opacity: 0, x: -8 * dir, duration: 0.15, ease: "close" })
+    .call(() => { bookName.textContent = name; bookCount.textContent = count; })
+    .fromTo([bookName, bookCount], { opacity: 0, x: 8 * dir }, { opacity: 1, x: 0, duration: 0.25, ease: "soft", stagger: 0.04 });
 }
 function goTo(i: number) {
   const from = book$.p;
+  const prev = spread;
   spread = clamp(i, 0, SPREADS.length - 1);
-  showSpread();
+  if (spread !== prev) showSpread(Math.sign(spread - prev));
   const to = SPREADS[spread];
   // Один разворот — чуть меньше секунды: страница успевает перевернуться, штампы лечь следом
   gsap.to(book$, {
