@@ -1,0 +1,78 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import TicketForm from "../components/TicketForm.astro";
+import { site } from "../data/site";
+---
+<Base title="Контакты — Выход 14 (концепт)" description="Визовый центр «Выход 14»: Санкт-Петербург, Лиговский проспект, 50, офис 14, метро «Площадь Восстания». Телефон, Telegram, часы работы." form>
+  <PageHead title="Лиговский, 50, офис 14" crumbs={[["Контакты"]]} lead={`${site.walk} «${site.metro}». Консультация в офисе бесплатная, можно без записи.`} />
+
+  <section class="section section--tight" aria-label="Как связаться">
+    <div class="wrap contacts">
+      <div class="contact-pass">
+        <span class="eyebrow eyebrow--ink">Посадочный талон</span>
+        <dl>
+          <div><dt class="label">Телефон</dt><dd><a href={site.phoneHref}>{site.phone}</a></dd></div>
+          <div><dt class="label">Telegram</dt><dd><a href={site.telegram}>{site.telegramName}</a></dd></div>
+          <div><dt class="label">Почта</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+          <div><dt class="label">Адрес</dt><dd>{site.addressFull}</dd></div>
+          <div><dt class="label">Часы</dt><dd class="hours">{site.hours.map(([d, h]) => <><span>{d}</span><span>{h}</span></>)}</dd></div>
+        </dl>
+        <span class="barcode" aria-hidden="true"></span>
+      </div>
+
+      <div class="map">
+        <svg viewBox="0 0 700 460" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="map-title">
+          <title id="map-title">Схема: от метро «Площадь Восстания» по Лиговскому проспекту до дома 50</title>
+          <rect width="700" height="460" fill="#e7e2d6"/>
+          <g fill="#ddd6c6">
+            <rect x="30" y="30" width="170" height="120" rx="4"/><rect x="240" y="30" width="170" height="120" rx="4"/><rect x="450" y="30" width="220" height="120" rx="4"/>
+            <rect x="30" y="200" width="170" height="230" rx="4"/><rect x="450" y="360" width="220" height="70" rx="4"/>
+            <rect x="240" y="200" width="170" height="230" rx="4"/>
+          </g>
+          <g fill="#fff">
+            <rect x="0" y="160" width="700" height="34"/>
+            <rect x="415" y="0" width="30" height="460"/>
+            <rect x="205" y="0" width="30" height="460"/>
+          </g>
+          <text class="map__street" x="40" y="181">Невский проспект</text>
+          <text class="map__street" x="436" y="250" transform="rotate(90 436 250)">Лиговский проспект</text>
+          <rect x="455" y="205" width="210" height="140" rx="4" fill="#cfc7b4"/>
+          <text class="map__label" x="560" y="280" text-anchor="middle" style="fill: rgba(22,24,28,0.6)">Московский вокзал</text>
+          <path d="M404 150 C 418 160, 428 180, 428 210 L 428 352 L 404 352" fill="none" stroke="#16181c" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/>
+          <g transform="translate(392 140)">
+            <circle r="16" fill="#c8102e"/>
+            <text x="0" y="5" text-anchor="middle" fill="#fff" style="font: 700 15px/1 var(--sans)">М</text>
+          </g>
+          <text class="map__label" x="368" y="124" text-anchor="end">Площадь Восстания</text>
+          <g transform="translate(366 352)">
+            <rect x="-34" y="-20" width="68" height="40" rx="8" fill="#ffc21a"/>
+            <text x="0" y="6" text-anchor="middle" style="font: 700 17px/1 var(--mono); fill: #16181c">14</text>
+          </g>
+          <text class="map__label" x="322" y="357" text-anchor="end">Лиговский, 50</text>
+        </svg>
+        <a class="btn btn--ink map__route" href={site.routeHref} target="_blank" rel="noopener"><span class="btn__in">Построить маршрут</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="walk-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">Как дойти</p>
+        <h2 id="walk-title">От метро пять минут пешком</h2>
+      </div>
+      <ol class="walk">
+        <li class="reveal">Выходите из метро «Площадь Восстания» на Лиговский проспект, к Московскому вокзалу.</li>
+        <li class="reveal">Идёте по Лиговскому от Невского вдоль вокзала, на своей стороне улицы, до дома 50 с аркой во двор.</li>
+        <li class="reveal">Вход со двора, жёлтая табличка «14» у двери, второй этаж. Позвоните, если не найдёте, встретим.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Заявка">
+    <div class="wrap">
+      <TicketForm id="contact-apply" title="Не хотите ехать в офис? Перезвоним сами" comment />
+    </div>
+  </section>
+</Base>

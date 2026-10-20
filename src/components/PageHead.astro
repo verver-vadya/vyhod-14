@@ -1,0 +1,23 @@
+---
+// Тёмный верх внутренней страницы: «хлебные крошки», заголовок, вводный абзац
+import { url } from "../lib/url";
+interface Props { title: string; lead?: string; crumbs?: [string, string?][]; class?: string }
+const { title, lead, crumbs = [], class: cls } = Astro.props;
+---
+<section class:list={["pagehead", cls]}>
+  <div class="wrap pagehead__in">
+    <slot name="top">
+      <nav aria-label="Вы здесь">
+        <ol class="crumbs">
+          <li><a href={url("/")}>Главная</a></li>
+          {crumbs.map(([label, href]) => (
+            <li>{href ? <a href={url(href)}>{label}</a> : <span aria-current="page">{label}</span>}</li>
+          ))}
+        </ol>
+      </nav>
+      <h1>{title}</h1>
+      {lead && <p class="muted">{lead}</p>}
+    </slot>
+    <slot />
+  </div>
+</section>

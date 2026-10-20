@@ -1,0 +1,112 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import Led from "../components/Led.astro";
+import { site } from "../data/site";
+import { url } from "../lib/url";
+
+const STAGES = [
+  ["Документы", "Собираем и проверяем бумаги, заполняем анкету"],
+  ["Подано", "Документы приняты визовым центром страны"],
+  ["В консульстве", "Консульство рассматривает заявку"],
+  ["Виза готова", "Паспорт с визой вернулся в визовый центр"],
+  ["У курьера", "Везём паспорт вам или ждём в офисе"],
+];
+---
+<Base title="Статус заявки — Выход 14 (концепт)" description="Проверьте, где сейчас ваш паспорт: введите номер заявки из договора «Выход 14», и табло покажет этап оформления визы." led>
+  <PageHead title="Где сейчас ваш паспорт" crumbs={[["Статус заявки"]]} lead="Номер заявки есть в договоре и в первом письме от нас. Статус меняется, как только паспорт переходит на следующий этап." />
+
+  <section class="status dark" aria-label="Проверка статуса">
+    <div class="wrap status__in">
+      <div class="status__text">
+        <form class="status__form" id="status-form" action={url("/status/")} method="get" novalidate>
+          <div class="field">
+            <label for="status-num-input">Номер заявки</label>
+            <input id="status-num-input" name="num" autocomplete="off" placeholder="В14-2081" aria-describedby="status-hint" spellcheck="false" required>
+            <p class="field__hint" id="status-hint">Для примера подойдёт любой номер вида В14-2081</p>
+            <p class="field__error" id="status-err" hidden></p>
+          </div>
+          <button class="btn btn--signal" type="submit"><span class="btn__in">Проверить</span></button>
+        </form>
+        <p class="muted">Вопрос по заявке? Позвоните <a href={site.phoneHref}>{site.phone}</a> или напишите в <a href={site.telegram}>Telegram</a>.</p>
+      </div>
+      <div>
+        <div class="board board--mini" aria-live="polite">
+          <div class="board__head"><span class="board__title">Заявка</span><span class="board__clock" id="status-num">В14-____</span></div>
+          <ul class="board__rows">
+            <li><div class="row" id="status-row"><Led text="ЖДЁМ" len={9} class="c-country" /><Led text="НОМЕР" len={13} class="c-status" /></div></li>
+          </ul>
+          <p class="board__note">В концепте статус показан для примера: этап выбирается по номеру.</p>
+        </div>
+        <ol class="stages" id="stages">
+          {STAGES.map(([t, d]) => <li><b>{t}</b><span>{d}</span></li>)}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">Пока ждёте</p>
+        <h2 id="faq-title">Что происходит с паспортом</h2>
+      </div>
+      <div class="faq">
+        <details><summary>Почему статус давно не меняется?</summary><p>Консульство не сообщает промежуточных этапов: пока заявка «В консульстве», это нормально. Если срок рассмотрения для вашей страны уже прошёл, мы сами напишем в визовый центр и расскажем, что ответили.</p></details>
+        <details><summary>Можно ли забрать паспорт раньше, чем дадут визу?</summary><p>Да, большинство консульств возвращают паспорт по запросу, но рассмотрение при этом прекращается. Позвоните нам, подскажем, как сделать это без потери сбора, если это возможно.</p></details>
+        <details><summary>Как получить паспорт, если меня нет в Петербурге?</summary><p>Отправим курьерской службой в любой город России по доверенности. Стоимость доставки скажем заранее.</p></details>
+      </div>
+      <p style="margin-top: var(--s6)"><a class="link-arrow" href={url("/kontakty/")}>Контакты офиса <span aria-hidden="true">→</span></a></p>
+    </div>
+  </section>
+
+  <script>
+    import { setWord } from "../scripts/led";
+    const STAGES = ["ДОКУМЕНТЫ", "ПОДАНО", "В КОНСУЛЬСТВЕ", "ВИЗА ГОТОВА", "У КУРЬЕРА"];
+    const COUNTRIES = ["ИТАЛИЯ", "ИСПАНИЯ", "ФРАНЦИЯ", "ГРЕЦИЯ", "ВЕНГРИЯ", "КИТАЙ", "ЯПОНИЯ", "ИНДИЯ"];
+    const form = document.getElementById("status-form") as HTMLFormElement;
+    const input = form.elements.namedItem("num") as HTMLInputElement;
+    const err = document.getElementById("status-err")!;
+    const row = document.getElementById("status-row")!;
+    const num = document.getElementById("status-num")!;
+    const stages = [...document.querySelectorAll("#stages li")];
+    const describe = (bad: boolean) => input.setAttribute("aria-describedby", bad ? "status-err status-hint" : "status-hint");
+
+    const check = () => {
+      const raw = input.value.trim().toUpperCase().replace(/^B/, "В").replace(/\s/g, "");
+      const m = raw.match(/^В?14-?(\d{4})$/) || raw.match(/^(\d{4})$/);
+      if (!m) {
+        input.setAttribute("aria-invalid", "true");
+        err.textContent = raw ? "Номер выглядит так: В14-2081. Он есть в договоре." : "Введите номер заявки из договора";
+        err.hidden = false;
+        describe(true);
+        input.focus();
+        return;
+      }
+      input.removeAttribute("aria-invalid");
+      err.hidden = true;
+      describe(false);
+      const n = +m[1];
+      const stage = n % STAGES.length;
+      num.textContent = "В14-" + m[1];
+      row.children[1].classList.toggle("is-ok", stage >= 3);
+      setWord(row.children[0], COUNTRIES[n % COUNTRIES.length], 0);
+      setWord(row.children[1], STAGES[stage], 120);
+      stages.forEach((li, i) => {
+        li.classList.toggle("is-done", i < stage);
+        li.classList.toggle("is-now", i === stage);
+        if (i === stage) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current");
+      });
+    };
+    form.addEventListener("submit", (e) => { e.preventDefault(); check(); });
+    // Ссылка вида /status/?num=В14-2081 сразу показывает статус
+    const fromLink = new URLSearchParams(location.search).get("num");
+    if (fromLink) { input.value = fromLink; check(); }
+    input.addEventListener("input", () => {
+      if (!input.hasAttribute("aria-invalid")) return;
+      input.removeAttribute("aria-invalid");
+      err.hidden = true;
+      describe(false);
+    });
+  </script>
+</Base>

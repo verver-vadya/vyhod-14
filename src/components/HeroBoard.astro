@@ -1,0 +1,39 @@
+---
+// Табло вылетов на первом экране: строки — страны, раз в несколько секунд одна строка меняется
+// на следующую страну (home.ts). Без JS табло показывает первые пять стран как есть.
+import Led from "./Led.astro";
+import { countries } from "../data/countries";
+import { COLS, rowOf } from "../lib/board";
+import { url } from "../lib/url";
+// Первыми — разные группы, чтобы сразу было видно и шенген, и Азию, и онлайн
+const FIRST = ["italiya", "kitay", "franciya", "indiya", "yaponiya"];
+const rows = FIRST.map((slug) => rowOf(countries.find((c) => c.slug === slug)!, false));
+---
+<div class="hero-board">
+  <div class="board" id="hero-board" aria-label="Табло направлений">
+    <div class="board__head">
+      <span class="board__title">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 19h19M3.4 13.7l2.6 2.1 4.1-1.1 9.7-2.6c.9-.2 1.4-1.1 1.2-2-.2-.9-1.1-1.4-2-1.2l-3.4.9-5.6-4.9-2 .5 3.2 5.6-3.6 1-2-1.6-1.6.4 1.4 3z" fill="currentColor"/></svg>
+        Вылеты<span class="board__sub"> · куда оформляем</span>
+      </span>
+      <span class="board__clock">Петербург <time id="clock">--:--</time></span>
+    </div>
+    <div class="board__cols" aria-hidden="true">
+      {COLS.map(([cls, , label]) => <span class={cls}>{label}</span>)}
+    </div>
+    <ul class="board__rows">
+      {rows.map((r) => (
+        <li>
+          <a class="row" href={url(`/vizy/${r.slug}/`)} aria-label={r.label}>
+            {r.words.map((w, i) => <Led text={w} len={COLS[i][1]} class={`${COLS[i][0]}${i === 5 && r.ok ? " is-ok" : ""}`} />)}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="board__legend">
+      <span><b class="ok">Приём открыт</b> — подаём в ближайшие дни</span>
+      <span><b class="wait">Запись</b> — ближайшая свободная дата</span>
+      <span><b class="ok">Онлайн</b> — без визита в консульство</span>
+    </p>
+  </div>
+</div>

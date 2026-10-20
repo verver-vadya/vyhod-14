@@ -26,15 +26,18 @@ jobs:
       - uses: actions/checkout@v4
       - id: pages
         uses: actions/configure-pages@v5
-      # Превью живёт по адресу /<репозиторий>/, а страница 404 открывается на любом адресе:
-      # подставляем ей правильный корень, иначе она без стилей и с битой ссылкой на главную.
-      - name: Корень сайта для страницы 404
-        run: sed -i 's|<base href="/">|<base href="${{ steps.pages.outputs.base_path }}/">|' 404.html
-      # Служебные файлы Claude на сайт не нужны.
-      - name: Убрать служебные папки
-        run: rm -rf .claude
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Превью живёт по адресу /<репозиторий>/: сборка подставляет этот корень во все ссылки
+      - name: Сборка
+        run: npm run build
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
       - id: deployment
         uses: actions/deploy-pages@v4

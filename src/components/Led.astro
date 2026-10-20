@@ -1,0 +1,10 @@
+---
+// Надпись на светодиодном табло: len ячеек, text горит сразу (без JS так и останется)
+import { ledChar } from "../lib/ledFont";
+interface Props { text?: string; len: number; class?: string }
+const { text = "", len, class: cls } = Astro.props;
+const chars = [...text.toUpperCase().padEnd(len, " ").slice(0, len)].map(ledChar);
+---
+<span class:list={["word", cls]} data-overlap-ok><span class="visually-hidden">{text}</span>{chars.map((ch) => (
+  <span class="cell" data-c={ch} aria-hidden="true"><i></i></span>
+))}</span>

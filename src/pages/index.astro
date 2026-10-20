@@ -1,0 +1,211 @@
+---
+import Base from "../layouts/Base.astro";
+import HeroBoard from "../components/HeroBoard.astro";
+import PassCard from "../components/PassCard.astro";
+import Route from "../components/Route.astro";
+import TicketForm from "../components/TicketForm.astro";
+import { bySlug, countries, extras, steps } from "../data/countries";
+import { asset, url } from "../lib/url";
+
+const popular = ["italiya", "ispaniya", "franciya", "kitay", "yaponiya", "indiya"].map(bySlug);
+---
+<Base title="Выход 14 — визовый центр в Петербурге (концепт)" description="Визовый центр «Выход 14» в Петербурге: собираем документы на шенген, визы в Китай, Японию и электронные визы. Концепт сайта." home form led>
+  <Fragment slot="head">
+    <link rel="preload" as="image" href={asset("img/hero-1600.webp")} imagesrcset={`${asset("img/hero-960.webp")} 960w, ${asset("img/hero-1600.webp")} 1600w, ${asset("img/hero-2560.webp")} 2560w`} imagesizes="100vw" media="(min-width: 761px)">
+    <link rel="preload" as="image" href={asset("img/hero-phone.webp")} media="(max-width: 760px)">
+  </Fragment>
+
+  <Fragment slot="before">
+    <div class="intro" id="intro" aria-hidden="true" data-overlap-ok>
+      <div class="intro__pass">
+        <div class="intro__main">
+          <span class="label">Посадочный талон</span>
+          <div class="intro__grid">
+            <span><small>Пассажир</small>Вы</span>
+            <span><small>Рейс</small>LED → мир</span>
+            <span><small>Выход</small>14</span>
+            <span><small>Посадка</small><time class="intro__time">--:--</time></span>
+          </div>
+          <span class="barcode"></span>
+        </div>
+        <div class="intro__stub">
+          <span class="label">Выход</span>
+          <span class="intro__gate">14</span>
+        </div>
+        <div class="intro__stamp"><span>Одобрено</span><small>Выход 14 · СПб</small></div>
+      </div>
+      <button class="intro__skip" type="button" tabindex="-1">Пропустить</button>
+    </div>
+    <div class="sky" aria-hidden="true">
+      <span class="sky__l sky--dawn"></span><span class="sky__l sky--day"></span><span class="sky__l sky--gold"></span><span class="sky__l sky--sunset"></span>
+    </div>
+  </Fragment>
+
+  <section class="hero">
+    <div class="hero__media" aria-hidden="true">
+      <picture>
+        <source media="(max-width: 760px)" srcset={asset("img/hero-phone.webp")}>
+        <img src={asset("img/hero-1600.webp")} srcset={`${asset("img/hero-960.webp")} 960w, ${asset("img/hero-1600.webp")} 1600w, ${asset("img/hero-2560.webp")} 2560w`} sizes="100vw" alt="" width="1600" height="900" fetchpriority="high">
+      </picture>
+      <video class="hero__video" id="hero-video" muted playsinline loop preload="none"></video>
+    </div>
+    <div class="hero__shade" aria-hidden="true"></div>
+
+    <div class="hero__body">
+      <div class="hero__text">
+        <p class="eyebrow">Визовый центр · Санкт-Петербург</p>
+        <h1 class="hero__title">Документы на визу соберём мы. Вам останется купить билет.</h1>
+        <div class="hero__actions">
+          <a class="btn btn--signal" href={url("/vizy/")}><span class="btn__in">Подобрать визу</span></a>
+          <a class="btn btn--glass" href={url("/status/")}><span class="btn__in">Проверить статус заявки</span></a>
+        </div>
+      </div>
+
+      <aside class="widgets" aria-label="Сейчас в мире">
+        <div class="widget widget--city">
+          <span class="widget__label">Сейчас в</span>
+          <span class="widget__city" id="w-city"></span>
+          <div class="widget__row">
+            <time class="widget__time" id="w-time">--:--</time>
+            <span class="widget__weather" id="w-weather"></span>
+          </div>
+        </div>
+        <div class="widget widget--rate" id="w-rate" hidden>
+          <span class="widget__label">Евро по курсу ЦБ</span>
+          <span class="widget__big" id="w-eur"></span>
+          <span class="widget__small" id="w-fee"></span>
+        </div>
+        <a class="widget widget--link" href={url("/status/")}>
+          <span class="widget__label">Уже подали?</span>
+          <span>Где сейчас паспорт <span aria-hidden="true">→</span></span>
+        </a>
+      </aside>
+    </div>
+
+    <HeroBoard />
+  </section>
+
+  <section class="section passes" data-sky="dawn" aria-labelledby="passes-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">01 / Куда оформляем</p>
+        <h2 id="passes-title">Шесть направлений, о которых спрашивают чаще всего</h2>
+        <a class="link-arrow" href={url("/vizy/")}>Все {countries.length} стран <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="passes__grid">
+        {popular.map((c) => <PassCard c={c} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section route" data-sky="day" aria-labelledby="route-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">02 / Как всё проходит</p>
+        <h2 id="route-title">Четыре остановки от звонка до паспорта с визой</h2>
+      </div>
+      <Route steps={steps} animated />
+    </div>
+  </section>
+
+  <section class="passport" id="passport" data-sky="gold" aria-labelledby="passport-title">
+    <div class="passport__sticky">
+      <div class="wrap passport__in">
+        <div class="passport__text">
+          <p class="eyebrow eyebrow--ink">03 / Один паспорт, много стран</p>
+          <h2 id="passport-title">Шенген, Китай и Япония в одном паспорте</h2>
+          <p class="passport__lead">Подскажем, в каком порядке подавать, чтобы паспорт не застрял в одном консульстве, пока горит запись в другое.</p>
+          <ol class="passport__list" id="passport-list">
+            <li data-step="0">Италия, шенген на 90 дней</li>
+            <li data-step="1">Китай, туристическая виза</li>
+            <li data-step="2">Япония, краткосрочная виза</li>
+            <li data-step="3">Отметки о въезде по дороге</li>
+          </ol>
+        </div>
+        <div class="book-wrap" aria-hidden="true" data-overlap-ok>
+          <div class="book" id="book">
+            <div class="book__page book__page--last">
+              <div class="stamp stamp--round stamp--violet" data-s="3" style="--x: 14%; --y: 12%; --r: -14deg"><b>FRA</b><span>Въезд</span><small>02.06.26</small></div>
+              <div class="stamp stamp--rect stamp--green" data-s="3" style="--x: 40%; --y: 46%; --r: 8deg"><b>✈ LED</b><span>Выезд 14.07.26</span></div>
+              <div class="stamp stamp--round stamp--red" data-s="3" style="--x: 22%; --y: 66%; --r: 18deg"><b>GRC</b><span>Arrival</span><small>15.07.26</small></div>
+              <span class="book__num">7</span>
+            </div>
+            <div class="leaf" data-leaf="2">
+              <div class="leaf__face leaf__front">
+                <div class="visa visa--jp" data-s="2">
+                  <div class="visa__top"><span>Japan · Visa</span><span>No. 0014</span></div>
+                  <div class="visa__body"><span class="visa__photo"></span><dl><dt>Тип</dt><dd>Temporary visitor</dd><dt>Срок</dt><dd>15 дней</dd><dt>Въездов</dt><dd>1</dd></dl></div>
+                  <div class="visa__mrz">VJ&lt;&lt;OBRAZEC&lt;&lt;VYHOD14&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+                </div>
+                <span class="book__num">5</span>
+              </div>
+              <div class="leaf__face leaf__back">
+                <div class="stamp stamp--round stamp--blue" data-s="3" style="--x: 50%; --y: 10%; --r: -8deg"><b>NRT</b><span>Landed</span><small>11.04.26</small></div>
+                <div class="stamp stamp--rect stamp--red" data-s="3" style="--x: 10%; --y: 54%; --r: -4deg"><b>ESP</b><span>Entrada 20.05.26</span></div>
+                <span class="book__num">6</span>
+              </div>
+            </div>
+            <div class="leaf" data-leaf="1">
+              <div class="leaf__face leaf__front">
+                <div class="visa visa--it" data-s="0">
+                  <div class="visa__top"><span>Schengen · Visto</span><span>ITA 0014</span></div>
+                  <div class="visa__body"><span class="visa__photo"></span><dl><dt>Тип</dt><dd>C · Multi</dd><dt>Срок</dt><dd>90 дней</dd><dt>Действует</dt><dd>до 01.10.27</dd></dl></div>
+                  <div class="visa__mrz">VCITAOBRAZEC&lt;&lt;VYHOD14&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+                </div>
+                <div class="stamp stamp--round stamp--green" data-s="0" style="--x: 56%; --y: 70%; --r: 12deg"><b>FCO</b><span>Ingresso</span><small>03.11.26</small></div>
+                <span class="book__num">3</span>
+              </div>
+              <div class="leaf__face leaf__back">
+                <div class="visa visa--cn" data-s="1">
+                  <div class="visa__top"><span>China · Visa</span><span>L · 0014</span></div>
+                  <div class="visa__body"><span class="visa__photo"></span><dl><dt>Тип</dt><dd>L · Туризм</dd><dt>Пребывание</dt><dd>30 дней</dd><dt>Въездов</dt><dd>2</dd></dl></div>
+                  <div class="visa__mrz">VLCHNOBRAZEC&lt;&lt;VYHOD14&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+                </div>
+                <div class="stamp stamp--rect stamp--blue" data-s="1" style="--x: 30%; --y: 72%; --r: -10deg"><b>PEK</b><span>入境 Entry 18.02.26</span></div>
+                <span class="book__num">4</span>
+              </div>
+            </div>
+            <div class="leaf leaf--cover" data-leaf="0">
+              <div class="leaf__face leaf__front cover">
+                <span class="cover__title">Паспорт</span>
+                <span class="cover__emblem"><svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="32" cy="32" rx="11" ry="26" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 32h52M10 19h44M10 45h44" stroke="currentColor" stroke-width="1.5" fill="none"/></svg></span>
+                <span class="cover__sub">Passport</span>
+                <span class="cover__note">Образец</span>
+              </div>
+              <div class="leaf__face leaf__back datapage">
+                <span class="datapage__title">Образец · Specimen</span>
+                <div class="datapage__row"><span class="datapage__photo"></span>
+                  <dl><dt>Фамилия</dt><dd>Путешественник</dd><dt>Имя</dt><dd>Любой</dd><dt>Выдан</dt><dd>Выход 14</dd></dl>
+                </div>
+                <span class="datapage__mrz">P&lt;OBRAZEC&lt;&lt;PUTESHESTVENNIK&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" data-sky="sunset" aria-labelledby="extras-title">
+    <div class="wrap side">
+      <div class="section__head section__head--side reveal">
+        <p class="eyebrow eyebrow--ink">04 / Ещё поможем</p>
+        <h2 id="extras-title">Всё, что консульство попросит рядом с анкетой</h2>
+        <a class="link-arrow" href={url("/uslugi/")}>Все услуги и цены <span aria-hidden="true">→</span></a>
+      </div>
+      <ul class="pricelist">
+        {extras.slice(0, 6).map(([name, price]) => <li class="reveal"><span>{name}</span><span class="dots" aria-hidden="true"></span><b>{price}</b></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section--flush" id="zayavka" data-sky="sunset">
+    <div class="wrap">
+      <TicketForm id="home-apply" />
+    </div>
+  </section>
+
+  <script>
+    import "../scripts/home.ts";
+  </script>
+</Base>

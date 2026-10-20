@@ -1,0 +1,85 @@
+---
+import Base from "../layouts/Base.astro";
+import PageHead from "../components/PageHead.astro";
+import { countries, extras, packages } from "../data/countries";
+import { rub, url } from "../lib/url";
+---
+<Base title="Услуги и цены — Выход 14 (концепт)" description="Сколько стоит оформить визу через «Выход 14» в Петербурге: пакеты «Документы», «Под ключ» и «Срочно», цены по странам и дополнительные услуги.">
+  <PageHead title="Услуги и цены" crumbs={[["Услуги и цены"]]} lead="Три пакета на выбор, цена фиксируется в договоре. Консульский сбор страны оплачивается отдельно, по курсу в день подачи." />
+
+  <section class="section section--tight" aria-labelledby="plans-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">01 / Пакеты</p>
+        <h2 id="plans-title">Сколько работы берём на себя</h2>
+      </div>
+      <div class="plans">
+        {packages.map((p) => (
+          <div class:list={["plan", "reveal", { "plan--best": "best" in p }]}>
+            {"best" in p && <span class="plan__tag">Чаще берут</span>}
+            <h3>{p.name}</h3>
+            <p class="plan__price">от {rub(Math.min(...countries.map((c) => c.price)) + p.extra)}<small>цена зависит от страны, таблица ниже</small></p>
+            <div class="notes">
+              <p class="plan__text">{p.text}</p>
+              <ul class="ticks">{p.items.map((it) => <li>{it}</li>)}</ul>
+            </div>
+            <a class:list={["btn", "btn--wide", "best" in p ? "btn--signal" : "btn--line"]} href={url("/zayavka/")}><span class="btn__in">Оставить заявку</span></a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="table-title">
+    <div class="wrap">
+      <div class="section__head reveal">
+        <p class="eyebrow eyebrow--ink">02 / По странам</p>
+        <h2 id="table-title">Цены за одного человека</h2>
+      </div>
+      <div class="table-wrap reveal" tabindex="0" role="region" aria-labelledby="table-title">
+        <table class="prices">
+          <thead>
+            <tr><th scope="col">Страна</th><th scope="col">Документы</th><th scope="col">Под ключ</th><th scope="col">Срочно</th><th scope="col">Консульский сбор</th></tr>
+          </thead>
+          <tbody>
+            {countries.map((c) => (
+              <tr>
+                <th scope="row"><a href={url(`/vizy/${c.slug}/`)}>{c.name} <span>{c.code}</span></a></th>
+                <td>{rub(c.price)}</td>
+                <td>{rub(c.price + packages[1].extra)}</td>
+                <td>{c.urgent ? rub(c.price + packages[2].extra) : "нет у консульства"}</td>
+                <td>{c.fee}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="extras-title">
+    <div class="wrap side">
+      <div class="section__head section__head--side reveal">
+        <p class="eyebrow eyebrow--ink">03 / Отдельно</p>
+        <h2 id="extras-title">Можно заказать без пакета</h2>
+      </div>
+      <ul class="pricelist">
+        {extras.map(([name, price]) => <li class="reveal"><span>{name}</span><span class="dots" aria-hidden="true"></span><b>{price}</b></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section--flush" aria-labelledby="pay-title">
+    <div class="wrap side">
+      <div class="section__head section__head--side reveal">
+        <p class="eyebrow eyebrow--ink">04 / Оплата</p>
+        <h2 id="pay-title">Как платить</h2>
+      </div>
+      <div class="prose reveal">
+        <p>Половину стоимости пакета платите при подписании договора, вторую половину — после подачи документов. Картой в офисе, по ссылке или переводом по счёту для компаний.</p>
+        <p>Консульский и сервисный сборы визового центра платите сами в день подачи: так в чеке будет ваше имя, а сумма — по официальному курсу.</p>
+        <p>Если консульство откажет в визе по пакету «Под ключ», повторную подачу в ту же или другую страну сделаем без оплаты наших услуг.</p>
+      </div>
+    </div>
+  </section>
+</Base>
