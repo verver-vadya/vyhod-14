@@ -511,10 +511,14 @@ html.has-menu { overflow: hidden; }
 .leaf__back { transform: rotateY(180deg); }
 /* Гибкий лист (src/scripts/home.ts): полосы вложены друг в друга, каждая со своим доворотом --b */
 .strip { position: absolute; top: 0; left: 0; width: calc(var(--pw) / 6 + 2px); height: 100%; transform-origin: 0 50%; transform-style: preserve-3d; transform: rotateY(calc(var(--b, 0) * 1deg)); }
-.slice { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-.slice--back { transform: rotateY(180deg); }
+/* Полоса шириной во всю страницу, видна только её доля: тогда проценты внутри страницы (отступы, размеры)
+   считаются от той же ширины, что и у лёгшего листа, и в конце переворота ничего не прыгает */
+.slice { position: absolute; top: 0; left: 0; width: var(--pw); height: 100%; overflow: hidden; clip-path: inset(0 calc(var(--pw) * 5 / 6 - 2px) 0 0); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+/* Оборот зеркалится вокруг середины своей доли, тогда он ложится точно туда же, где будет у лёгшего листа */
+.slice--back { transform: rotateY(180deg); transform-origin: calc(var(--pw) / 12) 50%; }
 .leaf__face.slice__face { inset: auto; top: 0; left: calc(var(--pw) / -6 * var(--i)); width: var(--pw); height: 100%; transform: none; backface-visibility: visible; -webkit-backface-visibility: visible; }
-.leaf.is-flat > .strip { width: var(--pw); }
+.leaf.is-flat > .strip > .slice { clip-path: none; }
+.leaf.is-flat > .strip > .slice--back { transform-origin: 50% 50%; }
 .leaf.is-flat > .strip > .slice > .slice__face { left: 0; }
 .leaf.is-flat .strip .strip { visibility: hidden; }
 .slice__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(22, 24, 28, var(--s0, 0)), rgba(22, 24, 28, var(--s1, 0))); pointer-events: none; }
