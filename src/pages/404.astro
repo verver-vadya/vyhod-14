@@ -1,9 +1,9 @@
 ---
 import Base from "../layouts/Base.astro";
-import Flap from "../components/Flap.astro";
+import Led from "../components/Led.astro";
 import { url } from "../lib/url";
 ---
-<Base title="Страница не найдена — Выход 14" description="Такой страницы на сайте визового центра «Выход 14» нет." noindex>
+<Base title="Страница не найдена — Выход 14" description="Такой страницы на сайте визового центра «Выход 14» нет." noindex led>
   <section class="pagehead notfound">
     <div class="wrap pagehead__in">
       <p class="eyebrow">Ошибка 404</p>
@@ -12,7 +12,7 @@ import { url } from "../lib/url";
       <div class="board board--mini">
         <div class="board__head"><span class="board__title">Рейс</span><span class="board__clock">404</span></div>
         <ul class="board__rows">
-          <li><div class="row"><Flap text="ВЫХОД 404" len={9} class="c-country" /><Flap text="ОТМЕНЁН" len={13} class="c-status" /></div></li>
+          <li><div class="row"><Led text="ВЫХОД 404" len={9} class="c-country" /><Led text="ОТМЕНЁН" len={13} class="c-status" /></div></li>
         </ul>
       </div>
       <div class="hero__actions">

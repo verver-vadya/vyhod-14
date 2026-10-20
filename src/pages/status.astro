@@ -1,7 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import PageHead from "../components/PageHead.astro";
-import Flap from "../components/Flap.astro";
+import Led from "../components/Led.astro";
 import { site } from "../data/site";
 import { url } from "../lib/url";
 
@@ -13,7 +13,7 @@ const STAGES = [
   ["У курьера", "Везём паспорт вам или ждём в офисе"],
 ];
 ---
-<Base title="Статус заявки — Выход 14 (концепт)" description="Проверьте, где сейчас ваш паспорт: введите номер заявки из договора «Выход 14», и табло покажет этап оформления визы.">
+<Base title="Статус заявки — Выход 14 (концепт)" description="Проверьте, где сейчас ваш паспорт: введите номер заявки из договора «Выход 14», и табло покажет этап оформления визы." led>
   <PageHead title="Где сейчас ваш паспорт" crumbs={[["Статус заявки"]]} lead="Номер заявки есть в договоре и в первом письме от нас. Статус меняется, как только паспорт переходит на следующий этап." />
 
   <section class="status dark" aria-label="Проверка статуса">
@@ -34,7 +34,7 @@ const STAGES = [
         <div class="board board--mini" aria-live="polite">
           <div class="board__head"><span class="board__title">Заявка</span><span class="board__clock" id="status-num">В14-____</span></div>
           <ul class="board__rows">
-            <li><div class="row" id="status-row"><Flap text="ЖДЁМ" len={9} class="c-country" /><Flap text="НОМЕР" len={13} class="c-status" /></div></li>
+            <li><div class="row" id="status-row"><Led text="ЖДЁМ" len={9} class="c-country" /><Led text="НОМЕР" len={13} class="c-status" /></div></li>
           </ul>
           <p class="board__note">В концепте статус показан для примера: этап выбирается по номеру.</p>
         </div>
@@ -61,7 +61,7 @@ const STAGES = [
   </section>
 
   <script>
-    import { setWord } from "../scripts/flap";
+    import { setWord } from "../scripts/led";
     const STAGES = ["ДОКУМЕНТЫ", "ПОДАНО", "В КОНСУЛЬСТВЕ", "ВИЗА ГОТОВА", "У КУРЬЕРА"];
     const COUNTRIES = ["ИТАЛИЯ", "ИСПАНИЯ", "ФРАНЦИЯ", "ГРЕЦИЯ", "ВЕНГРИЯ", "КИТАЙ", "ЯПОНИЯ", "ИНДИЯ"];
     const form = document.getElementById("status-form") as HTMLFormElement;

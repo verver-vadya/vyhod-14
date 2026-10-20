@@ -1,9 +1,8 @@
-// GSAP для сайта: плагины и кривые из правил движения проекта (setup/motion-examples.md), без отскоков
+// GSAP для сайта: кривые из правил движения проекта (setup/motion-examples.md), без отскоков
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CustomEase } from "gsap/CustomEase";
 
-gsap.registerPlugin(ScrollTrigger, CustomEase);
+gsap.registerPlugin(CustomEase);
 
 // Те же кривые, что --ease-* в global.css
 CustomEase.create("soft", "0.35,0,0.15,1");
@@ -13,4 +12,4 @@ CustomEase.create("quick", "0.23,1,0.32,1");
 
 gsap.defaults({ ease: "soft", duration: 0.5 });
 
-export { gsap, ScrollTrigger };
+export { gsap };

@@ -1,8 +1,11 @@
 // Главная: заставка, видео, табло вылетов, виджеты, самолёт маршрута, паспорт и небо по прокрутке
-import { fontsReady, makeCell, reduce, setWord, setWordInstant } from "./flap";
+import { fontsReady, makeCell, reduce, setWord, setWordInstant } from "./led";
 import { countries } from "../data/countries";
 import { rowOf } from "../lib/board";
-import { gsap, ScrollTrigger } from "./motion";
+import { gsap } from "./motion";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -80,7 +83,7 @@ if (!reduce.matches && !conn?.saveData) {
 }
 
 // ---------- табло вылетов ----------
-// Строки появляются после заставки, потом раз в 4,2 с одна строка перещёлкивается на следующую страну
+// Строки появляются после заставки, потом раз в 4,2 с одна строка меняется на следующую страну
 const board = document.getElementById("hero-board")!;
 const rows = [...board.querySelectorAll<HTMLAnchorElement>(".row")];
 const flights = countries.map((c) => rowOf(c));
@@ -96,7 +99,7 @@ function setRow(row: HTMLAnchorElement, i: number, baseDelay = 0) {
   return Promise.all([...words].map((w, k) => setWord(w, f.words[k], baseDelay + k * 60)));
 }
 
-// Пустое табло до первого перещёлкивания; без JS остаются строки из HTML
+// Табло погашено до первого заполнения; без JS остаются строки из HTML
 if (!reduce.matches) rows.forEach((r) => r.querySelectorAll(".word").forEach((w) => setWordInstant(w, "")));
 const visible = (el: Element) => (el as HTMLElement).offsetParent !== null;
 
@@ -139,6 +142,7 @@ const CITIES: [string, string, number, number][] = [
 const wCity = document.createElement("span");
 wCity.className = "word";
 wCity.dataset.overlapOk = "";
+wCity.append(Object.assign(document.createElement("span"), { className: "visually-hidden" }));
 for (let i = 0; i < 7; i++) wCity.append(makeCell(" "));
 document.getElementById("w-city")!.append(wCity);
 const wTime = document.getElementById("w-time")!;
@@ -152,7 +156,7 @@ const showWeather = () => { const w = weather?.[cityIdx]; wWeather.textContent =
 
 function showCity(first: boolean) {
   const [name, tz] = CITIES[cityIdx];
-  setWord(wCity, name, first ? 300 : 0, 60, 3);
+  setWord(wCity, name, first ? 300 : 0);
   wTime.textContent = fmtTime(tz);
   showWeather();
 }

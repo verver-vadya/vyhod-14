@@ -1,7 +1,7 @@
 ---
-// Табло вылетов на первом экране: строки — страны, раз в несколько секунд одна строка перещёлкивается
+// Табло вылетов на первом экране: строки — страны, раз в несколько секунд одна строка меняется
 // на следующую страну (home.ts). Без JS табло показывает первые пять стран как есть.
-import Flap from "./Flap.astro";
+import Led from "./Led.astro";
 import { countries } from "../data/countries";
 import { COLS, rowOf } from "../lib/board";
 import { url } from "../lib/url";
@@ -25,7 +25,7 @@ const rows = FIRST.map((slug) => rowOf(countries.find((c) => c.slug === slug)!, 
       {rows.map((r) => (
         <li>
           <a class="row" href={url(`/vizy/${r.slug}/`)} aria-label={r.label}>
-            {r.words.map((w, i) => <Flap text={w} len={COLS[i][1]} class={`${COLS[i][0]}${i === 5 && r.ok ? " is-ok" : ""}`} />)}
+            {r.words.map((w, i) => <Led text={w} len={COLS[i][1]} class={`${COLS[i][0]}${i === 5 && r.ok ? " is-ok" : ""}`} />)}
           </a>
         </li>
       ))}

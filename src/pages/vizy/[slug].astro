@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import PageHead from "../../components/PageHead.astro";
-import Flap from "../../components/Flap.astro";
+import Led from "../../components/Led.astro";
 import PassCard from "../../components/PassCard.astro";
 import Route from "../../components/Route.astro";
 import TicketForm from "../../components/TicketForm.astro";
@@ -18,7 +18,7 @@ const plans = packages.filter((p) => p.id !== "urgent" || c.urgent);
 const others = countries.filter((o) => o.group === c.group && o.slug !== c.slug).concat(countries.filter((o) => o.group !== c.group)).slice(0, 3);
 const evisa = c.group === "evisa";
 ---
-<Base title={`Виза ${c.to}: документы, сроки, цены — Выход 14 (концепт)`} description={`${c.visa} ${c.to} через визовый центр «Выход 14» в Петербурге: срок от ${c.days} рабочих дней, услуги от ${rub(c.price)}. Список документов и как проходит оформление.`} form>
+<Base title={`Виза ${c.to}: документы, сроки, цены — Выход 14 (концепт)`} description={`${c.visa} ${c.to} через визовый центр «Выход 14» в Петербурге: срок от ${c.days} рабочих дней, услуги от ${rub(c.price)}. Список документов и как проходит оформление.`} form led>
   <PageHead title="" class="country-head">
     <div class="country-head__in" slot="top">
       <div class="country-head__text">
@@ -45,7 +45,7 @@ const evisa = c.group === "evisa";
       </div>
       <div class="country-head__photo">
         <img src={asset(`img/${c.slug}-960.webp`)} srcset={`${asset(`img/${c.slug}-960.webp`)} 960w, ${asset(`img/${c.slug}-1264.webp`)} 1264w`} sizes="(max-width: 1100px) 92vw, 600px" alt={c.photo.alt} width="960" height="644" fetchpriority="high">
-        <div class="country-head__code" aria-hidden="true" data-overlap-ok><Flap text={c.code} len={3} /></div>
+        <div class="country-head__code" aria-hidden="true" data-overlap-ok><Led text={c.code} len={3} /></div>
       </div>
     </div>
   </PageHead>
@@ -135,13 +135,13 @@ const evisa = c.group === "evisa";
   </section>
 
   <script>
-    // Код страны на фото перещёлкивается при загрузке, как строка табло
-    import { fontsReady, setWord, setWordInstant } from "../../scripts/flap";
+    // Код страны на фото загорается при загрузке, как строка табло
+    import { fontsReady, setWord, setWordInstant } from "../../scripts/led";
     const code = document.querySelector(".country-head__code .word");
     if (code) {
       const text = [...code.children].map((c) => (c as HTMLElement).dataset.c).join("");
       setWordInstant(code, "");
-      fontsReady.then(() => setWord(code, text, 250, 80, 5));
+      fontsReady.then(() => setWord(code, text, 250));
     }
   </script>
 </Base>
