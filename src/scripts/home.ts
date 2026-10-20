@@ -277,7 +277,7 @@ leaves.forEach((leaf) => {
   for (let i = 0; i < STRIPS; i++) {
     const strip = document.createElement("div");
     strip.className = "strip";
-    if (i) strip.style.left = "calc(100% - 0.5px)";
+    if (i) strip.style.left = "calc(100% - 2px)";
     for (const [face, side] of [[front, "front"], [back, "back"]] as const) {
       const slice = document.createElement("div");
       slice.className = `slice slice--${side}`;
@@ -323,6 +323,8 @@ function renderPassport(p: number) {
     lastA[i] = a;
     const b = BEND * Math.sin((Math.PI * -a) / 180) * lag[i];
     leaf.style.setProperty("--a", a.toFixed(2));
+    // Лёгший лист показываем одним куском: полосы нужны только в полёте, в покое их стыки видны тонкими линиями
+    leaf.classList.toggle("is-flat", Math.abs(b) < 0.01);
     leaf.style.zIndex = String(a > -90 ? 10 - i : 10 + i);
     stripsOf.get(leaf)!.forEach((st, k) => st.style.setProperty("--b", k ? b.toFixed(2) : "0"));
     // Тень на изгибе: чем круче полоса повёрнута к свету, тем она темнее
@@ -331,6 +333,11 @@ function renderPassport(p: number) {
       const turn = a + b * k;
       const sh = (0.16 * Math.abs(Math.sin((turn * Math.PI) / 180)) * Math.abs(b)) / BEND;
       shades[k * 2].style.opacity = shades[k * 2 + 1].style.opacity = sh.toFixed(3);
+      // Какую сторону полосы видно, решаем сами: backface-visibility на вложенных слоях браузеры
+      // соблюдают по-разному, и в полёте сквозь лист проступало зеркальное лицо
+      const back = turn < -90;
+      shades[k * 2].parentElement!.style.visibility = back ? "hidden" : "";
+      shades[k * 2 + 1].parentElement!.style.visibility = back ? "" : "hidden";
     }
   });
   const stepK = STEPS.map(([a, b]) => seg(p, a, b));
