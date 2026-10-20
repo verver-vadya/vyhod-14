@@ -515,9 +515,12 @@ html.has-menu { overflow: hidden; }
 .slice--back { transform: rotateY(180deg); }
 .leaf__face.slice__face { inset: auto; top: 0; left: calc(var(--pw) / -6 * var(--i)); width: var(--pw); height: 100%; transform: none; backface-visibility: visible; -webkit-backface-visibility: visible; }
 .slice__shade { position: absolute; inset: 0; background: #16181c; opacity: 0; pointer-events: none; }
+/* Водяной знак verver: ромб «Отражение» в кольце из надписи, как защитная печать бланка */
+.book { --watermark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3Cpath id='r' d='M100 100m-84 0a84 84 0 1 1 168 0a84 84 0 1 1-168 0'/%3E%3C/defs%3E%3Cg fill='none' stroke='%232f3a33' stroke-opacity='.11'%3E%3Ccircle cx='100' cy='100' r='94' stroke-width='.8'/%3E%3Ccircle cx='100' cy='100' r='75' stroke-width='.8'/%3E%3C/g%3E%3Ctext font-family='Helvetica,Arial,sans-serif' font-size='10.5' font-weight='700' fill='%232f3a33' fill-opacity='.1'%3E%3CtextPath href='%23r' textLength='527' lengthAdjust='spacing'%3EVERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 VERVER %C2%B7 %3C/textPath%3E%3C/text%3E%3Cg transform='translate(100 100) scale(1.05)' fill='%232f3a33'%3E%3Cpolygon points='-50,0 0,-50 50,0 33,0 0,-33 -33,0' fill-opacity='.045'/%3E%3Cpolygon points='-50,0 0,50 50,0 33,0 0,33 -33,0' fill-opacity='.1'/%3E%3C/g%3E%3C/svg%3E") center 46% / 78% no-repeat; }
 .book__page, .leaf__face:not(.cover) {
   background:
     linear-gradient(90deg, rgba(22, 24, 28, 0.1), rgba(22, 24, 28, 0) 12%),
+    var(--watermark),
     repeating-radial-gradient(circle at 30% 120%, rgba(120, 140, 120, 0.07) 0 1px, transparent 1px 7px),
     #f5f0e4;
   border-radius: 0 8px 8px 0;
@@ -526,6 +529,7 @@ html.has-menu { overflow: hidden; }
 .leaf__back:not(.cover), .datapage {
   background:
     linear-gradient(270deg, rgba(22, 24, 28, 0.1), rgba(22, 24, 28, 0) 12%),
+    var(--watermark),
     repeating-radial-gradient(circle at 70% 120%, rgba(120, 140, 120, 0.07) 0 1px, transparent 1px 7px),
     #f5f0e4;
   border-radius: 8px 0 0 8px;
