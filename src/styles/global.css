@@ -794,6 +794,127 @@ html.has-menu { overflow: hidden; }
 @keyframes page-out { to { opacity: 0; transform: translateY(-6px); } }
 @keyframes page-in { from { opacity: 0; transform: translateY(10px); } }
 
+/* ---------- Земля «Куда летим» ---------- */
+.globe__board {
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s6); align-items: center;
+  padding: var(--s6); border-radius: var(--radius); background: var(--led-tile); color: var(--on-dark);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+}
+.globe__stage { position: relative; aspect-ratio: 1; width: 100%; max-width: min(720px, 100svh - 120px); justify-self: center; overflow: hidden; }
+.globe--flat .globe__stage { aspect-ratio: 1.56; }
+.globe__poster, .globe__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.globe__poster { object-fit: contain; transition: opacity var(--d-hover) var(--ease-hover); }
+.globe__canvas { opacity: 0; cursor: grab; touch-action: pan-y; transition: opacity var(--d-hover) var(--ease-hover); }
+.globe__canvas.is-pointing { cursor: pointer; }
+.globe__canvas.is-dragging { cursor: grabbing; }
+.is-live .globe__canvas { opacity: 1; }
+.is-live .globe__poster, .is-flat .globe__poster { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .js .globe__poster { visibility: hidden; } }
+
+/* подписи над точками: позицию ставит globe-view.ts */
+.globe__tag {
+  position: absolute; left: 0; top: 0; display: none; pointer-events: none; white-space: nowrap;
+  font: 500 var(--fs-xs)/1 var(--mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--on-dark);
+  transition: opacity var(--d-small) var(--ease-quick);
+}
+.is-live .globe__tag { display: block; }
+.globe__tag.is-off { opacity: 0; }
+/* у Пулково и аэропорта точка стоит ровно на месте, надпись в плашке рядом с ней */
+.globe__tag--home, .globe__tag--dest { margin: -10px 0 0 10px; padding: 4px 6px; border-radius: 4px; background: rgba(16, 18, 21, 0.78); }
+.globe__tag--home::before, .globe__tag--dest::before {
+  content: ""; position: absolute; left: -14px; top: calc(50% - 4px); width: 8px; height: 8px; border-radius: 50%;
+  background: currentColor; box-shadow: 0 0 0 3px rgba(242, 239, 230, 0.16), 0 0 12px currentColor;
+}
+.globe__tag--dest { color: var(--led-wait); }
+.globe__tag.is-left { margin-left: -10px; translate: -100% 0; }
+.globe__tag.is-left::before { left: auto; right: -14px; }
+.globe__tag b { font-weight: 700; margin-right: 4px; }
+.globe__tag--hover { padding: 5px 8px; border-radius: 6px; background: rgba(16, 18, 21, 0.85); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); translate: -50% calc(-100% - 12px); }
+.globe__hint {
+  position: absolute; left: 50%; bottom: var(--s2); translate: -50% 0; display: none; margin: 0;
+  font: 500 var(--fs-xs)/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--on-dark-2);
+  transition: opacity var(--d-hover) var(--ease-hover);
+}
+.is-live .globe__hint { display: block; }
+.is-flat .globe__hint { display: none; }
+.globe__hint.is-off { opacity: 0; }
+
+.globe__side { display: grid; gap: var(--s5); align-content: start; }
+.globe__side .board__head { margin-bottom: 0; }
+.globe__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px var(--s2); }
+.groute {
+  display: grid; grid-template-columns: 3.4em minmax(0, 1fr) auto; align-items: center; gap: var(--s2);
+  width: 100%; min-height: var(--tap); padding: 0 var(--s3); border: 0; border-radius: var(--radius-s);
+  background: transparent; color: var(--on-dark); font: 500 var(--fs-s)/1.2 var(--sans); text-align: left; text-decoration: none; cursor: pointer;
+  transition: background-color var(--d-small) var(--ease-quick), transform var(--d-press) var(--ease-quick);
+}
+.groute__code { font: 700 var(--fs-s)/1 var(--mono); color: var(--led); transition: color var(--d-small) var(--ease-quick); }
+.groute__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.groute__days { font: 500 var(--fs-xs)/1 var(--mono); color: var(--on-dark-2); white-space: nowrap; }
+.groute[aria-pressed="true"] { background: rgba(255, 194, 58, 0.16); }
+.groute[aria-pressed="true"] .groute__code { color: var(--led-wait); }
+.groute[aria-pressed="true"] .groute__name { font-weight: 600; }
+.groute:focus-visible { outline: 2px solid var(--signal); outline-offset: 0; }
+@media (hover: hover) and (pointer: fine) { .groute:hover { background: rgba(255, 255, 255, 0.06); } .groute[aria-pressed="true"]:hover { background: rgba(255, 194, 58, 0.22); } }
+.groute:active { transform: scale(0.98); }
+
+/* посадочный талон выбранной страны */
+.globe__cards { display: grid; min-height: 258px; }
+.globe__cards > * { grid-area: 1 / 1; }
+.globe__empty {
+  display: grid; gap: var(--s3); align-content: start; padding: var(--s5); border-radius: var(--radius);
+  color: var(--on-dark-2); border: 1.5px dashed var(--dark-line);
+}
+.globe__empty .gcard__route b { color: var(--on-dark); }
+.globe__empty .gcard__route small { color: var(--on-dark-2); }
+.globe__empty .gcard__line { border-top-color: var(--dark-line); }
+.globe__empty .gcard__line::after { background: var(--dark-line); }
+.globe__empty .label { color: var(--on-dark-2); }
+.globe__empty p { max-width: 34ch; font-size: var(--fs-s); }
+.globe__empty[hidden], .gcard[hidden] { display: none; }
+.gcard {
+  display: grid; gap: var(--s3); align-content: start; padding: var(--s5); border-radius: var(--radius);
+  background: var(--card); color: var(--ink);
+}
+.gcard__top { display: flex; justify-content: space-between; gap: var(--s3); }
+.gcard__route { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--s3); }
+.gcard__route > span:not(.gcard__line) { display: grid; gap: 2px; }
+.gcard__route > span:last-child { text-align: right; }
+.gcard__route b { font: 700 1.75rem/1 var(--mono); letter-spacing: -0.02em; }
+.gcard__route small { font-size: var(--fs-xs); color: var(--ink-2); }
+.gcard__line { position: relative; height: 2px; border-top: 2px dashed rgba(22, 24, 28, 0.3); }
+.gcard__line::after { content: ""; position: absolute; right: -2px; top: -6px; width: 10px; height: 10px; border-radius: 50%; background: var(--signal); }
+.gcard__country { font-size: var(--fs-l); margin-top: var(--s1); }
+.gcard .pass__meta { margin: 0; }
+.gcard__go { justify-self: start; margin-top: var(--s2); }
+
+@media (max-width: 1240px) and (min-width: 1101px) {
+  /* узкая колонка рядом с шаром: срок есть в талоне, в списке оставляем код и страну */
+  .groute { grid-template-columns: 3.4em minmax(0, 1fr); }
+  .groute__days { display: none; }
+}
+@media (max-width: 1100px) {
+  .globe__board { grid-template-columns: 1fr; gap: var(--s5); }
+  .globe__stage { max-width: 620px; }
+}
+@media (max-width: 760px) {
+  .globe__board { padding: var(--s4); margin-inline: calc(var(--s2) * -1); }
+  /* на телефоне страны — лента под шаром: нажал, и дуга с талоном видны на том же экране */
+  .globe__side { gap: var(--s4); }
+  .globe__list {
+    display: flex; gap: var(--s2); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    margin-inline: calc(var(--s4) * -1); padding-inline: var(--s4); scroll-padding-inline: var(--s4);
+  }
+  .globe__list::-webkit-scrollbar { display: none; }
+  .globe__list li { flex: none; }
+  .groute { grid-template-columns: auto auto; padding: 0 16px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--dark-line); }
+  .groute[aria-pressed="true"] { box-shadow: none; }
+  .groute__days { display: none; }
+  .globe__cards { min-height: 248px; }
+  .gcard { padding: var(--s4); }
+  .gcard__route b { font-size: 1.5rem; }
+}
+
 /* ---------- адаптив ---------- */
 @media (max-height: 780px) and (min-width: 761px) {
   .hero-board .board__rows li:nth-child(n + 4) { display: none; }

@@ -4,6 +4,7 @@ import HeroBoard from "../components/HeroBoard.astro";
 import PassCard from "../components/PassCard.astro";
 import Route from "../components/Route.astro";
 import TicketForm from "../components/TicketForm.astro";
+import Globe from "../components/Globe.astro";
 import { bySlug, countries, extras, steps } from "../data/countries";
 import { asset, url } from "../lib/url";
 
@@ -194,10 +195,12 @@ const popular = ["italiya", "ispaniya", "franciya", "kitay", "yaponiya", "indiya
     </div>
   </section>
 
+  <Globe />
+
   <section class="section" data-sky="sunset" aria-labelledby="extras-title">
     <div class="wrap side">
       <div class="section__head section__head--side reveal">
-        <p class="eyebrow eyebrow--ink">04 / Ещё поможем</p>
+        <p class="eyebrow eyebrow--ink">05 / Ещё поможем</p>
         <h2 id="extras-title">Всё, что консульство попросит рядом с анкетой</h2>
         <a class="link-arrow" href={url("/uslugi/")}>Все услуги и цены <span aria-hidden="true">→</span></a>
       </div>
@@ -215,5 +218,6 @@ const popular = ["italiya", "ispaniya", "franciya", "kitay", "yaponiya", "indiya
 
   <script>
     import "../scripts/home.ts";
+    import "../scripts/globe.ts";
   </script>
 </Base>

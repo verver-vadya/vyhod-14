@@ -19,6 +19,7 @@
 
 ## Данные
 
+- Карта суши и границы стран для Земли на главной: [Natural Earth](https://www.naturalearthdata.com) 1:50m, общественное достояние, через пакет [world-atlas](https://github.com/topojson/world-atlas) (ISC).
 - Погода: [Open-Meteo](https://open-meteo.com), данные по лицензии CC BY 4.0 (указано в подвале).
 - Курс евро: [cbr-xml-daily.ru](https://www.cbr-xml-daily.ru), зеркало официальных курсов ЦБ РФ.
 
