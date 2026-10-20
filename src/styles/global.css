@@ -489,11 +489,11 @@ html.has-menu { overflow: hidden; }
 .book-nav__btn[data-dir="1"]:active svg { transform: translateX(3px); }
 .book-nav__btn[data-dir="-1"]:active svg { transform: translateX(-3px); }
 .book-nav__btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-.book-nav__btn:disabled { opacity: 0.25; cursor: default; transform: none; }
+.book-nav__btn:disabled { opacity: 0.25; transform: none; pointer-events: none; }
 @media (hover: hover) and (pointer: fine) {
-  .book-nav__btn:not(:disabled):hover { background: #2a2d33; }
-  .book-nav__btn[data-dir="1"]:not(:disabled):hover svg { transform: translateX(2px); }
-  .book-nav__btn[data-dir="-1"]:not(:disabled):hover svg { transform: translateX(-2px); }
+  .book-nav__btn:hover { background: #2a2d33; }
+  .book-nav__btn[data-dir="1"]:hover svg { transform: translateX(2px); }
+  .book-nav__btn[data-dir="-1"]:hover svg { transform: translateX(-2px); }
 }
 .book-hint { font-size: var(--fs-xs); color: var(--ink-2); text-align: center; }
 .book {
