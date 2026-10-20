@@ -19,7 +19,7 @@ const STAGES = [
   <section class="status dark" aria-label="Проверка статуса">
     <div class="wrap status__in">
       <div class="status__text">
-        <form class="status__form" id="status-form" novalidate>
+        <form class="status__form" id="status-form" action={url("/status/")} method="get" novalidate>
           <div class="field">
             <label for="status-num-input">Номер заявки</label>
             <input id="status-num-input" name="num" autocomplete="off" placeholder="В14-2081" aria-describedby="status-hint" spellcheck="false" required>
@@ -72,8 +72,7 @@ const STAGES = [
     const stages = [...document.querySelectorAll("#stages li")];
     const describe = (bad: boolean) => input.setAttribute("aria-describedby", bad ? "status-err status-hint" : "status-hint");
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
+    const check = () => {
       const raw = input.value.trim().toUpperCase().replace(/^B/, "В").replace(/\s/g, "");
       const m = raw.match(/^В?14-?(\d{4})$/) || raw.match(/^(\d{4})$/);
       if (!m) {
@@ -98,7 +97,11 @@ const STAGES = [
         li.classList.toggle("is-now", i === stage);
         if (i === stage) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current");
       });
-    });
+    };
+    form.addEventListener("submit", (e) => { e.preventDefault(); check(); });
+    // Ссылка вида /status/?num=В14-2081 сразу показывает статус
+    const fromLink = new URLSearchParams(location.search).get("num");
+    if (fromLink) { input.value = fromLink; check(); }
     input.addEventListener("input", () => {
       if (!input.hasAttribute("aria-invalid")) return;
       input.removeAttribute("aria-invalid");

@@ -16,7 +16,7 @@ const popular = ["italiya", "ispaniya", "franciya", "kitay", "yaponiya", "indiya
   </Fragment>
 
   <Fragment slot="before">
-    <div class="intro" id="intro" aria-hidden="true">
+    <div class="intro" id="intro" aria-hidden="true" data-overlap-ok>
       <div class="intro__pass">
         <div class="intro__main">
           <span class="label">Посадочный талон</span>
@@ -45,7 +45,7 @@ const popular = ["italiya", "ispaniya", "franciya", "kitay", "yaponiya", "indiya
     <div class="hero__media" aria-hidden="true">
       <picture>
         <source media="(max-width: 760px)" srcset={asset("img/hero-phone.webp")}>
-        <img src={asset("img/hero-1600.webp")} srcset={`${asset("img/hero-960.webp")} 960w, ${asset("img/hero-1600.webp")} 1600w, ${asset("img/hero-2560.webp")} 2560w`} sizes="100vw" alt="" fetchpriority="high">
+        <img src={asset("img/hero-1600.webp")} srcset={`${asset("img/hero-960.webp")} 960w, ${asset("img/hero-1600.webp")} 1600w, ${asset("img/hero-2560.webp")} 2560w`} sizes="100vw" alt="" width="1600" height="900" fetchpriority="high">
       </picture>
       <video class="hero__video" id="hero-video" muted playsinline loop preload="none"></video>
     </div>
@@ -122,7 +122,7 @@ const popular = ["italiya", "ispaniya", "franciya", "kitay", "yaponiya", "indiya
             <li data-step="3">Отметки о въезде по дороге</li>
           </ol>
         </div>
-        <div class="book-wrap" aria-hidden="true">
+        <div class="book-wrap" aria-hidden="true" data-overlap-ok>
           <div class="book" id="book">
             <div class="book__page book__page--last">
               <div class="stamp stamp--round stamp--violet" data-s="3" style="--x: 14%; --y: 12%; --r: -14deg"><b>FRA</b><span>Въезд</span><small>02.06.26</small></div>

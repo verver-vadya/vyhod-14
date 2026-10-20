@@ -112,26 +112,29 @@ a[href^="tel:"] { white-space: nowrap; }
 .btn__in {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s2);
   min-height: 52px; padding: 0 26px; border-radius: inherit; white-space: nowrap;
+  background: var(--btn-bg, transparent); color: var(--btn-fg, currentColor); box-shadow: var(--btn-line, none);
+  transform: scale(var(--btn-scale, 1));
   transition: transform var(--d-press) var(--ease-quick), background-color var(--d-small) var(--ease-quick), color var(--d-small) var(--ease-quick), box-shadow var(--d-small) var(--ease-quick);
 }
-.btn:active .btn__in { transform: scale(0.97); }
+/* Состояния меняют переменные на самой кнопке, внутренний слой их подхватывает */
+.btn:active { --btn-scale: 0.97; }
 .btn--sm .btn__in { min-height: 40px; padding: 0 18px; font-size: var(--fs-s); }
-.btn--signal .btn__in { background: var(--signal); color: var(--ink); }
-.btn--glass .btn__in { background: var(--glass); box-shadow: inset 0 0 0 1px var(--glass-line); color: var(--on-dark); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
-.btn--ink .btn__in { background: var(--ink); color: var(--paper); }
-.btn--line .btn__in { box-shadow: inset 0 0 0 1.5px var(--ink); color: var(--ink); }
+.btn--signal { --btn-bg: var(--signal); --btn-fg: var(--ink); }
+.btn--glass { --btn-bg: var(--glass); --btn-line: inset 0 0 0 1px var(--glass-line); --btn-fg: var(--on-dark); }
+.btn--glass .btn__in { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.btn--ink { --btn-bg: var(--ink); --btn-fg: var(--paper); }
+.btn--line { --btn-line: inset 0 0 0 1.5px var(--ink); --btn-fg: var(--ink); }
 .btn--wide, .btn--wide .btn__in { width: 100%; }
 @media (hover: hover) and (pointer: fine) {
-  .btn--signal:hover .btn__in { background: var(--signal-hi); }
-  .btn--glass:hover .btn__in { background: rgba(16, 18, 22, 0.6); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3); }
-  .btn--ink:hover .btn__in { background: #2a2d33; }
-  .btn--line:hover .btn__in { background: var(--ink); color: var(--paper); }
+  .btn--signal:hover { --btn-bg: var(--signal-hi); }
+  .btn--glass:hover { --btn-bg: rgba(16, 18, 22, 0.6); --btn-line: inset 0 0 0 1px rgba(255, 255, 255, 0.3); }
+  .btn--ink:hover { --btn-bg: #2a2d33; }
+  .btn--line:hover { --btn-bg: var(--ink); --btn-fg: var(--paper); }
 }
-.btn:disabled { cursor: default; opacity: 0.5; }
-.btn:disabled .btn__in { transform: none; }
+.btn:disabled { cursor: default; opacity: 0.5; --btn-scale: 1; }
 .btn[aria-busy="true"] { cursor: progress; }
 
-.link-arrow { font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: var(--s2); min-height: var(--tap); position: relative; }
+.link-arrow { font-weight: 600; text-decoration: none; display: inline-flex; width: fit-content; align-items: center; gap: var(--s2); min-height: var(--tap); position: relative; }
 .link-arrow::after { content: ""; position: absolute; left: 0; right: 0; bottom: 8px; height: 1.5px; background: currentColor; transform-origin: right; transition: transform var(--d-hover) var(--ease-hover); }
 .link-arrow span { transition: transform var(--d-small) var(--ease-quick); }
 @media (hover: hover) and (pointer: fine) {
@@ -142,6 +145,8 @@ a[href^="tel:"] { white-space: nowrap; }
 /* ---------- заставка (главная, первый заход) ---------- */
 .intro { display: none; }
 html.has-intro body { overflow: hidden; }
+/* Шапка остаётся над заставкой: меню можно открыть сразу */
+html.has-intro .header { z-index: 210; }
 html.has-intro .intro {
   display: grid; place-items: center;
   position: fixed; inset: 0; z-index: 200;
@@ -349,7 +354,7 @@ html.has-menu { overflow: hidden; }
 .pagehead .muted { max-width: 56ch; font-size: var(--fs-m); }
 .crumbs { display: flex; flex-wrap: wrap; gap: var(--s2); list-style: none; margin: 0; padding: 0; font: 500 var(--fs-xs)/1.4 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--on-dark-2); }
 .crumbs li + li::before { content: "→"; margin-right: var(--s2); color: rgba(242, 239, 230, 0.4); }
-.crumbs a { text-decoration: none; display: inline-flex; min-height: 24px; align-items: center; }
+.crumbs a { text-decoration: none; display: inline-flex; min-height: var(--tap); margin-block: calc((24px - var(--tap)) / 2); align-items: center; }
 @media (hover: hover) and (pointer: fine) { .crumbs a:hover { color: var(--on-dark); } }
 .crumbs [aria-current] { color: var(--signal); }
 
@@ -413,7 +418,10 @@ html.has-menu { overflow: hidden; }
 .chip small { font: 500 var(--fs-xs)/1 var(--mono); color: var(--ink-2); transition: color var(--d-small) var(--ease-quick); }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); box-shadow: none; }
 .chip[aria-pressed="true"] small { color: rgba(239, 235, 226, 0.7); }
-@media (hover: hover) and (pointer: fine) { .chip:not([aria-pressed="true"]):hover { box-shadow: inset 0 0 0 1.5px var(--ink); } }
+@media (hover: hover) and (pointer: fine) {
+  .chip:not([aria-pressed="true"]):hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
+  .chip[aria-pressed="true"]:hover { background: #2a2d33; }
+}
 .chip:active { transform: scale(0.97); }
 
 /* маршрут */

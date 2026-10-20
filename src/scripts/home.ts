@@ -137,6 +137,7 @@ const CITIES: [string, string, number, number][] = [
 ];
 const wCity = document.createElement("span");
 wCity.className = "word";
+wCity.dataset.overlapOk = "";
 for (let i = 0; i < 7; i++) wCity.append(makeCell(" "));
 document.getElementById("w-city")!.append(wCity);
 const wTime = document.getElementById("w-time")!;

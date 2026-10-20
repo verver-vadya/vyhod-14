@@ -15,7 +15,6 @@ if (menu && burger && typeof menu.showModal === "function") {
     if (menu.open) return;
     menu.showModal();
     html.classList.add("has-menu");
-    burger.setAttribute("aria-expanded", "true");
     // Кадр, в котором окно встаёт поверх страницы, проходит без движения: так выезд не теряет кадры
     await nextFrame();
     await nextFrame();
@@ -40,7 +39,6 @@ if (menu && burger && typeof menu.showModal === "function") {
   menu.addEventListener("close", () => {
     menu.classList.remove("is-open");
     html.classList.remove("has-menu");
-    burger.setAttribute("aria-expanded", "false");
     burger.focus({ preventScroll: true });
   });
   // На широком экране меню не нужно: если окно растянули с открытым меню, закрываем

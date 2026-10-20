@@ -4,6 +4,6 @@ interface Props { text?: string; len: number; class?: string }
 const { text = "", len, class: cls } = Astro.props;
 const chars = text.toUpperCase().padEnd(len, " ").slice(0, len).split("");
 ---
-<span class:list={["word", cls]}>{chars.map((ch) => (
+<span class:list={["word", cls]} data-overlap-ok>{chars.map((ch) => (
   <span class="cell" data-c={ch}><span class="t"><i>{ch}</i></span><span class="b"><i>{ch}</i></span><span class="ft"><i>{ch}</i></span><span class="fb"><i>{ch}</i></span></span>
 ))}</span>
