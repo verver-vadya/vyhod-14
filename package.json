@@ -9,6 +9,7 @@
     "check": "astro build && npm --prefix .github/check run check -- --site ../../dist"
   },
   "dependencies": {
-    "astro": "7.3.5"
+    "astro": "7.3.5",
+    "gsap": "3.15.0"
   }
 }

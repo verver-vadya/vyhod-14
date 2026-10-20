@@ -2,6 +2,7 @@
 import { fontsReady, makeCell, reduce, setWord, setWordInstant } from "./flap";
 import { countries } from "../data/countries";
 import { rowOf } from "../lib/board";
+import { gsap, ScrollTrigger } from "./motion";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -197,16 +198,16 @@ Promise.all([introDone, fontsReady]).then(() => {
 })();
 
 // ---------- всё, что зависит от прокрутки ----------
+// Прогресс каждой сцены ведёт ScrollTrigger со сглаживанием (scrub): колесо мыши двигает страницу
+// ступеньками, а сцена плавно догоняет. На телефоне прокрутка и так плавная, поэтому догон короче.
+const scrub = () => (matchMedia("(pointer: coarse)").matches ? 0.35 : 0.7);
+
 // маршрут: самолёт летит вместе с прокруткой
 const route = document.getElementById("route")!;
 const track = route.querySelector<HTMLElement>(".route__track")!;
 const stops = [...route.querySelectorAll(".stop")];
-function updateRoute(vh: number) {
-  const r = route.getBoundingClientRect();
-  if (r.bottom < -200 || r.top > vh + 200) return;
-  const p = clamp((vh * 0.9 - r.top) / (vh * 0.55));
+function renderRoute(p: number) {
   track.style.setProperty("--p", p.toFixed(4));
-  track.style.setProperty("--w", String(track.clientWidth));
   stops.forEach((s, i) => s.classList.toggle("is-passed", p >= i / (stops.length - 1) - 0.001 && p > 0.02));
 }
 
@@ -245,12 +246,6 @@ function renderPassport(p: number) {
   });
   listItems.forEach((li, i) => li.classList.toggle("is-on", stepK[i] > 0.5));
 }
-function updatePassport(vh: number) {
-  const r = passport.getBoundingClientRect();
-  if (r.bottom < -100 || r.top > vh + 100) return;
-  const total = passport.offsetHeight - vh;
-  renderPassport(total > 0 ? clamp(-r.top / total) : 0.98);
-}
 
 // небо: рассвет → день → золотой час → закат, слои плавно сменяют друг друга
 const ORDER = ["dawn", "day", "gold", "sunset"];
@@ -260,8 +255,8 @@ let anchors: { name: string; y: number }[] = [];
 function measureSky() {
   anchors = skySections.map((s) => ({ name: s.dataset.sky!, y: s.getBoundingClientRect().top + scrollY + s.offsetHeight / 2 }));
 }
-function updateSky(vh: number) {
-  const y = scrollY + vh / 2;
+function renderSky(y: number) {
+  if (!anchors.length) return;
   let from = anchors[0], to = anchors[0], t = 0;
   for (let i = 0; i < anchors.length - 1; i++) {
     if (y >= anchors[i].y) { from = anchors[i]; to = anchors[i + 1]; t = clamp((y - anchors[i].y) / (anchors[i + 1].y - anchors[i].y)); }
@@ -272,18 +267,33 @@ function updateSky(vh: number) {
   skyLayers.forEach((layer, i) => { layer.style.opacity = (i <= fi ? 1 : i === ti ? t : 0).toFixed(3); });
 }
 
-let ticking = false;
-function onFrame() {
-  ticking = false;
-  const vh = innerHeight;
-  updateRoute(vh);
-  updatePassport(vh);
-  updateSky(vh);
-}
-const request = () => { if (!ticking) { ticking = true; requestAnimationFrame(onFrame); } };
-addEventListener("scroll", request, { passive: true });
-addEventListener("resize", () => { measureSky(); request(); });
-addEventListener("load", () => { measureSky(); request(); });
 measureSky();
-if (reduce.matches) renderPassport(0.98);
-onFrame();
+const mm = gsap.matchMedia();
+mm.add({ motion: "(prefers-reduced-motion: no-preference)", reduce: "(prefers-reduced-motion: reduce)" }, (ctx) => {
+  if (ctx.conditions!.reduce) {
+    // Без движения: паспорт сразу раскрыт со всеми штампами, маршрут пройден, небо меняется без догона
+    renderPassport(0.98);
+    renderRoute(1);
+    ScrollTrigger.create({ start: 0, end: "max", onUpdate: () => renderSky(scrollY + innerHeight / 2), onRefresh: () => { measureSky(); renderSky(scrollY + innerHeight / 2); } });
+    return;
+  }
+  const route$ = { p: 0 };
+  gsap.to(route$, {
+    p: 1, ease: "none", onUpdate: () => renderRoute(route$.p),
+    scrollTrigger: { trigger: route, start: "top 90%", end: "top 35%", scrub: scrub(), onRefresh: () => track.style.setProperty("--w", String(track.clientWidth)) },
+  });
+  const passport$ = { p: 0 };
+  gsap.to(passport$, {
+    p: 1, ease: "none", onUpdate: () => renderPassport(passport$.p),
+    scrollTrigger: { trigger: passport, start: "top top", end: "bottom bottom", scrub: scrub() },
+  });
+  // Небо считаем по сглаженной середине экрана
+  const sky$ = { y: 0 };
+  gsap.to(sky$, {
+    y: () => ScrollTrigger.maxScroll(window), ease: "none", onUpdate: () => renderSky(sky$.y + innerHeight / 2),
+    scrollTrigger: { start: 0, end: "max", scrub: scrub(), invalidateOnRefresh: true, onRefresh: measureSky },
+  });
+});
+track.style.setProperty("--w", String(track.clientWidth));
+renderSky(scrollY + innerHeight / 2);
+addEventListener("load", () => ScrollTrigger.refresh());
