@@ -810,9 +810,10 @@ html.has-menu { overflow: hidden; }
 }
 .globe__stage { position: relative; aspect-ratio: 1; width: 100%; max-width: min(720px, 100svh - 120px); justify-self: center; overflow: hidden; }
 .globe--flat .globe__stage { aspect-ratio: 1.56; }
+.globe--flat .globe__canvas { touch-action: pan-y; }
 .globe__poster, .globe__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .globe__poster { object-fit: contain; transition: opacity var(--d-hover) var(--ease-hover); }
-.globe__canvas { opacity: 0; cursor: grab; touch-action: pan-y; transition: opacity var(--d-hover) var(--ease-hover); }
+.globe__canvas { opacity: 0; cursor: grab; touch-action: none; transition: opacity var(--d-hover) var(--ease-hover); }
 .globe__canvas.is-pointing { cursor: pointer; }
 .globe__canvas.is-dragging { cursor: grabbing; }
 .is-live .globe__canvas { opacity: 1; }
@@ -839,7 +840,7 @@ html.has-menu { overflow: hidden; }
 .globe__tag b { font-weight: 700; margin-right: 4px; }
 .globe__tag--hover { padding: 5px 8px; border-radius: 6px; background: rgba(16, 18, 21, 0.85); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); translate: -50% calc(-100% - 12px); }
 .globe__hint {
-  position: absolute; left: 50%; bottom: var(--s2); translate: -50% 0; display: none; margin: 0;
+  position: absolute; left: 50%; bottom: var(--s2); translate: -50% 0; display: none; margin: 0; pointer-events: none;
   font: 500 var(--fs-xs)/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--on-dark-2);
   transition: opacity var(--d-hover) var(--ease-hover);
 }

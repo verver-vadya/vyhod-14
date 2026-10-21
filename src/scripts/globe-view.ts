@@ -421,7 +421,8 @@ export function init() {
         if (e.pointerType !== "mouse") canvas.setPointerCapture(e.pointerId);
       }
       if (!drag.moved) return;
-      const degX = (dx / R) / D, degY = e.pointerType === "mouse" || e.pointerType === "pen" ? (dy / R) / D : 0;
+      // Пальцем крутим и по вертикали, как мышью: страница под глобусом не листается (touch-action: none)
+      const degX = (dx / R) / D, degY = (dy / R) / D;
       state.lon -= degX;
       state.lat = clamp(state.lat + degY, -25, 70);
       // скорость сглаживаем, чтобы бросок не зависел от последнего дёрнувшегося кадра
@@ -438,6 +439,8 @@ export function init() {
       if (!d.moved && e.type === "pointerup") select(pickAt(e.clientX, e.clientY));
       else if (d.moved && performance.now() - d.t < 80) spin = { vx: clamp(d.vx, -400, 400), vy: clamp(d.vy, -200, 200) };
     };
+    // Safari иногда начинает прокрутку страницы, даже если touch-action запрещает: держим палец на глобусе сами
+    canvas.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
     canvas.addEventListener("pointerup", end);
     canvas.addEventListener("pointercancel", end);
     canvas.addEventListener("pointerleave", () => { hovAt = null; if (!drag && hov >= 0) { hov = -1; wake(); } });
