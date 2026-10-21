@@ -288,7 +288,7 @@ export function init() {
     };
 
     // ---------- кадр ----------
-    let hov = -1, hovAt: [number, number] | null = null, auto = true, idleAt = 0, visible = false, running = false, last = 0;
+    let hov = -1, hovAt: { lat: number; lon: number } | null = null, auto = true, idleAt = 0, visible = false, running = false, last = 0;
     let drag: { id: number; x: number; y: number; sx: number; sy: number; t: number; vx: number; vy: number; moved: boolean } | null = null;
     let spin = { vx: 0, vy: 0 }; // инерция после броска, °/с
     let tween: ReturnType<typeof gsap.to> | null = null;
@@ -357,11 +357,14 @@ export function init() {
         const bx = at(hubs[countries[sel].slug], tagDest, state.prog > 0.95);
         sides(hx, bx, w);
       }
-      // название страны: над курсором, а если навели на строку списка — над её аэропортом
+      // название страны: над точкой Земли, куда навели курсор, а если навели на строку списка — над её аэропортом.
+      // Точку храним в координатах Земли, поэтому подпись едет вместе со страной, когда глобус крутят
       if (hov >= 0 && hov !== sel) {
         tagHover.textContent = countries[hov].name;
-        if (hovAt) place(tagHover, hovAt[0], hovAt[1], true);
-        else at(hubs[countries[hov].slug], tagHover, true);
+        if (hovAt) {
+          const p = apply(vec(hovAt.lat, hovAt.lon));
+          place(tagHover, w / 2 + p[0] * R, h / 2 - p[1] * R, p[2] > 0.12);
+        } else at(hubs[countries[hov].slug], tagHover, true);
       } else tagHover.classList.add("is-off");
 
       if (first) { first = false; stage.classList.add("is-live"); }
@@ -404,8 +407,8 @@ export function init() {
     canvas.addEventListener("pointermove", (e) => {
       if (!drag || drag.id !== e.pointerId) {
         if (e.pointerType === "mouse") {
-          const i = pickAt(e.clientX, e.clientY), r = canvas.getBoundingClientRect();
-          hovAt = [e.clientX - r.left, e.clientY - r.top];
+          const ll = toLatLon(e.clientX, e.clientY), i = ll ? countryAt(ll.lat, ll.lon) : -1;
+          hovAt = ll;
           if (i !== hov || i >= 0) { hov = i; wake(); }
           canvas.classList.toggle("is-pointing", i >= 0);
         }
