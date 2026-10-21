@@ -519,11 +519,13 @@ html.has-menu { overflow: hidden; }
 /* Полоса узкая и рисует только свою долю страницы; копия страницы внутри лежит в рамке во всю ширину
    (.slice__in), поэтому проценты внутри страницы считаются как у лёгшего листа и в конце переворота ничего не прыгает */
 .slice { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-/* Оборот зеркалится вокруг середины своей полосы, тогда он ложится точно туда же, где будет у лёгшего листа */
-.slice--back { transform: rotateY(180deg); }
+/* Оборот зеркалится вокруг середины своей доли страницы (без 2 px нахлёста), тогда он ложится точно туда же,
+   где будет у лёгшего листа; иначе в конце переворота лист сдвигался на 2 px */
+.slice--back { transform: rotateY(180deg); transform-origin: calc(var(--pw) / 12) 50%; }
 .slice__in { position: absolute; top: 0; left: calc(var(--pw) / -6 * var(--i)); width: var(--pw); height: 100%; }
 .leaf__face.slice__face { transform: none; backface-visibility: visible; -webkit-backface-visibility: visible; }
 .leaf.is-flat > .strip { width: var(--pw); }
+.leaf.is-flat > .strip > .slice--back { transform-origin: 50% 50%; }
 .leaf.is-flat > .strip > .slice > .slice__in { left: 0; }
 .leaf.is-flat .strip .strip { visibility: hidden; }
 .slice__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(22, 24, 28, var(--s0, 0)), rgba(22, 24, 28, var(--s1, 0))); pointer-events: none; }
