@@ -497,7 +497,10 @@ html.has-menu { overflow: hidden; }
 }
 .book-hint { font-size: var(--fs-xs); color: var(--ink-2); text-align: center; }
 .book {
+  /* Ширина страницы кратна 6 px: полосы листа (их 6) встают ровно по пикселям, и в начале переворота
+     содержимое не сдвигается на долю пикселя */
   --pw: clamp(150px, 25vw, 360px);
+  --pw: round(down, clamp(150px, 25vw, 360px), 6px);
   --ph: calc(var(--pw) * 1.42);
   --shift: 1;
   position: relative; width: calc(var(--pw) * 2); height: var(--ph);
@@ -980,7 +983,7 @@ html.has-menu { overflow: hidden; }
   .passport__in { grid-template-columns: 1fr; gap: var(--s5); align-content: center; }
   .passport__lead, .passport__list { display: none; }
   .passport__text h2 { font-size: 1.75rem; }
-  .book { --pw: min(44vw, 210px); }
+  .book { --pw: min(44vw, 210px); --pw: round(down, min(44vw, 210px), 6px); }
   .pricelist li { font-size: var(--fs-m); flex-wrap: wrap; }
   .pricelist .dots { display: none; }
   .pricelist b { margin-left: auto; }
