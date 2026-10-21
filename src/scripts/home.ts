@@ -271,13 +271,18 @@ leaves.forEach((leaf) => {
     for (const [face, side] of [[front, "front"], [back, "back"]] as const) {
       const slice = document.createElement("div");
       slice.className = `slice slice--${side}`;
+      // Копия страницы лежит в рамке шириной во всю страницу: проценты внутри (отступы, размеры) считаются
+      // от той же ширины, что у лёгшего листа, а сама полоса узкая и рисует только свою долю
+      const frame = document.createElement("div");
+      frame.className = "slice__in";
+      // Оборот страницы виден зеркально: полоса у корешка показывает край оборота, дальний от корешка
+      frame.style.setProperty("--i", String(side === "front" ? i : STRIPS - 1 - i));
       const copy = face.cloneNode(true) as HTMLElement;
       copy.classList.add("slice__face");
-      // Оборот страницы виден зеркально: полоса у корешка показывает край оборота, дальний от корешка
-      copy.style.setProperty("--i", String(side === "front" ? i : STRIPS - 1 - i));
+      frame.append(copy);
       const shade = document.createElement("i");
       shade.className = "slice__shade";
-      slice.append(copy, shade);
+      slice.append(frame, shade);
       strip.append(slice);
       shades.push(shade);
     }
@@ -298,20 +303,41 @@ const turnEase = gsap.parseEase("soft");
 const lastA = leaves.map(() => 0);
 const lag = leaves.map(() => 1);
 
+// Пишем в стиль только изменившиеся значения: на телефоне каждая лишняя запись — перерисовка полос
+const written = new WeakMap<HTMLElement, Record<string, string>>();
+function put(el: HTMLElement, prop: string, value: string) {
+  let w = written.get(el);
+  if (!w) written.set(el, (w = {}));
+  if (w[prop] === value) return;
+  w[prop] = value;
+  if (prop.startsWith("--")) el.style.setProperty(prop, value);
+  else (el.style as unknown as Record<string, string>)[prop] = value;
+}
+let drawn = false;
+// Корешок: тонкая линия сгиба между страницами, проявляется, когда паспорт открывается
+const spine = document.createElement("i");
+spine.className = "book__spine";
+book.append(spine);
+
 function renderPassport(p: number) {
   const open = turnEase(seg(p, LEAF_TURNS[0][0], LEAF_TURNS[0][1]));
-  book.style.setProperty("--shift", (1 - open).toFixed(4));
+  // Пишем сами свойства, а не переменные: переменная наследуется, и браузер на каждом кадре пересчитывал бы
+  // стили всех копий страниц внутри листа. На телефоне от этого паспорт и лагал
+  put(book, "transform", `translateX(calc(${(1 - open).toFixed(4)} * var(--pw) * -0.5))`);
+  put(spine, "opacity", open.toFixed(4));
   leaves.forEach((leaf, i) => {
     const a = -180 * turnEase(seg(p, LEAF_TURNS[i][0], LEAF_TURNS[i][1]));
+    // Лист, который не двигается, не трогаем
+    if (a === lastA[i] && drawn) return;
     // Свободный край отстаёт от корешка: при листании вперёд гнётся в одну сторону, назад — в другую
     if (a !== lastA[i]) lag[i] = a < lastA[i] ? 1 : -1;
     lastA[i] = a;
     const b = BEND * Math.sin((Math.PI * -a) / 180) * lag[i];
-    leaf.style.setProperty("--a", a.toFixed(2));
+    put(leaf, "transform", `rotateY(${a.toFixed(2)}deg)`);
     // Лёгший лист показываем одним куском: полосы нужны только в полёте, в покое их стыки видны тонкими линиями
     leaf.classList.toggle("is-flat", Math.abs(b) < 0.01);
-    leaf.style.zIndex = String(a > -90 ? 10 - i : 10 + i);
-    stripsOf.get(leaf)!.forEach((st, k) => st.style.setProperty("--b", k ? b.toFixed(2) : "0"));
+    put(leaf, "zIndex", String(a > -90 ? 10 - i : 10 + i));
+    stripsOf.get(leaf)!.forEach((st, k) => put(st, "transform", `rotateY(${k ? b.toFixed(2) : "0"}deg)`));
     // Тень на изгибе: чем круче полоса повёрнута к свету, тем она темнее. Внутри полосы тень
     // плавно идёт от её края к краю следующей, иначе на листе видны ступеньки
     const shades = shadesOf.get(leaf)!;
@@ -320,16 +346,17 @@ function renderPassport(p: number) {
       const turn = a + b * k;
       const s0 = shadeAt(k), s1 = shadeAt(k + 1);
       for (const sh of [shades[k * 2], shades[k * 2 + 1]]) {
-        sh.style.setProperty("--s0", s0);
-        sh.style.setProperty("--s1", s1);
+        put(sh, "--s0", s0);
+        put(sh, "--s1", s1);
       }
       // Какую сторону полосы видно, решаем сами: backface-visibility на вложенных слоях браузеры
       // соблюдают по-разному, и в полёте сквозь лист проступало зеркальное лицо
       const back = turn < -90;
-      shades[k * 2].parentElement!.style.visibility = back ? "hidden" : "";
-      shades[k * 2 + 1].parentElement!.style.visibility = back ? "" : "hidden";
+      put(shades[k * 2].parentElement!, "visibility", back ? "hidden" : "");
+      put(shades[k * 2 + 1].parentElement!, "visibility", back ? "" : "hidden");
     }
   });
+  drawn = true;
   const stepK = STEPS.map(([a, b]) => seg(p, a, b));
   listItems.forEach((li, i) => li.classList.toggle("is-on", stepK[i] > 0.5));
 }
